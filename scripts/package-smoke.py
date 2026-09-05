@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Install the production tarball in an isolated pi directory; never publish."""
+import json
+import os
+from pathlib import Path
+import subprocess
+import tarfile
+import tempfile
+
+ROOT = Path(__file__).resolve().parent.parent
+with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
+    work = Path(temporary)
+    packed = subprocess.run(["npm", "pack", "--json", "--pack-destination", str(work)], cwd=ROOT,
+                            check=True, capture_output=True, text=True)
+    data = json.loads(packed.stdout)
+    info = data[0] if isinstance(data, list) else data['pi-ssh']
+    for item in info["files"]:
+        name = item["path"]
+        assert name in ("package.json", "README.md", "LICENSE") or name.startswith(("src/", "docs/")), name
+    with tarfile.open(work / info["filename"]) as archive:
+        archive.extractall(work, filter="data")
+    package = work / "package"
+    subprocess.run(["npm", "install", "--omit=dev", "--ignore-scripts", "--legacy-peer-deps", "--no-audit", "--no-fund"],
+                   cwd=package, check=True, capture_output=True, text=True, timeout=120)
+    smoke = work / "smoke.ts"
+    smoke.write_text('''export default function(pi) {
+  pi.on("session_start", () => {
+    const tool = pi.getAllTools().find(t => t.name === "bash");
+    const ok = tool?.parameters?.properties?.host && tool?.parameters?.properties?.cwd
+      && tool.sourceInfo.source !== "builtin";
+    console.log(ok ? "PI_SSH_PACKAGE_SMOKE_OK" : "PI_SSH_PACKAGE_SMOKE_FAILED");
+    process.exit(ok ? 0 : 1);
+  });
+}
+''')
+    env = {key: os.environ[key] for key in ("HOME", "PATH", "TMPDIR", "LANG") if key in os.environ}
+    env.update({"PI_CODING_AGENT_DIR": str(work / "agent"), "PI_OFFLINE": "1", "PI_TELEMETRY": "0"})
+    subprocess.run(["pi", "install", str(package)], cwd=work, env=env, check=True,
+                   capture_output=True, text=True, timeout=30)
+    result = subprocess.run(["pi", "-e", str(smoke), "--no-skills", "--no-prompt-templates", "--no-themes",
+                             "--no-context-files", "--no-approve", "--no-session", "--offline", "-p", "unused"],
+                            cwd=work, env=env, capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0 and "PI_SSH_PACKAGE_SMOKE_OK" in result.stdout + result.stderr, (result.stdout, result.stderr)
+    assert not result.stderr.replace("PI_SSH_PACKAGE_SMOKE_OK", "").strip(), result.stderr
+    print(f"PASS production tarball: {len(info['files'])} allowlisted files; isolated pi install and bash schema registration")
