@@ -1,5 +1,12 @@
 # Tool and configuration reference
 
+## Package identity
+
+- npm: `@michaelasper/pi-ssh` (public).
+- GitHub: `michaelasper/pi-ssh`.
+- pi entry point: `src/index.ts`, declared in `package.json` under `pi.extensions`.
+- The unscoped npm name `pi-ssh` belongs to an unrelated project.
+
 ## Compatibility
 
 Tested against `@earendil-works/pi-coding-agent` 0.85.1. The extension uses the public `createBashToolDefinition` API; older versions without that export are unsupported. Peer dependencies use `*` as required by pi package conventions, not as a claim that every pi version works. They are optional peers because pi supplies them at runtime; a production installation adds no duplicate pi packages. Exact development versions and the lockfile make contributor installs reproducible.

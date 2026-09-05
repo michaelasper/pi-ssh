@@ -69,6 +69,12 @@ Registry `latest` versions checked: pi **0.85.1**, TypeBox **1.3.27**, TypeScrip
 
 A clean development install still reports the upstream `node-domexception@1.0.0` deprecation notice described in [development guidance](development.md#dependency-security). It is not a security advisory and is absent from production installs. No unsafe transitive override or disabled audit is used to conceal it. The minimum Node version was corrected to **22.19.0** to match pi’s declared engine requirement, and the 15-test suite passed on that exact version.
 
+## npm distribution: 0.1.1
+
+Version 0.1.1 introduces the scoped npm identity `@michaelasper/pi-ssh`; the bash implementation is unchanged from 0.1.0. The README and tutorial now start with npm installation, and the package includes public publish settings plus repository, homepage and issue-tracker metadata. The unscoped npm package is unrelated.
+
+For this distribution, all 15 tests, strict TypeScript checks, both npm audits and the production tarball smoke test passed again. The smoke test handles scoped package names and verifies zero installed production dependencies and no installation warnings. Authentication material is not part of the repository or package.
+
 ## Coverage limits
 
 - Real execution was verified from macOS, not Windows. IPv6 syntax is unit-tested; an IPv6 server was not used.

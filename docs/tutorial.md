@@ -1,6 +1,6 @@
 # Your first remote command
 
-This tutorial runs one harmless command remotely, then one locally. You need a local checkout of pi-ssh, pi 0.85.1, and an SSH alias named `build` for a machine you are authorised to use. The remote needs Bash.
+This tutorial runs one harmless command remotely, then one locally. You need pi 0.85.1, Node.js 22.19+, and an SSH alias named `build` for a machine you are authorised to use. The remote needs Bash.
 
 ## 1. Check the connection
 
@@ -22,11 +22,11 @@ You should again see `remote-ready`.
 
 ## 2. Start pi with the extension
 
-From the pi-ssh checkout:
+Install the npm package and start a fresh session:
 
 ```bash
-npm ci
-pi -e ./src/index.ts
+pi install npm:@michaelasper/pi-ssh
+pi
 ```
 
 pi may report that the extension overrides bash. That is expected.

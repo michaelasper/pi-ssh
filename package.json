@@ -1,6 +1,6 @@
 {
-  "name": "pi-ssh",
-  "version": "0.1.0",
+  "name": "@michaelasper/pi-ssh",
+  "version": "0.1.1",
   "description": "Optional SSH targeting for pi's bash tool",
   "type": "module",
   "keywords": [
@@ -10,7 +10,15 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/michaelasper/pi-ssh.git"
+    "url": "git+https://github.com/michaelasper/pi-ssh.git"
+  },
+  "homepage": "https://github.com/michaelasper/pi-ssh#readme",
+  "bugs": {
+    "url": "https://github.com/michaelasper/pi-ssh/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "src",

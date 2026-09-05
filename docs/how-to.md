@@ -1,5 +1,44 @@
 # Work with remote projects
 
+## Install, update or remove
+
+Install the public npm package:
+
+```bash
+pi install npm:@michaelasper/pi-ssh
+```
+
+Restart pi or use `/reload` after installation. The unscoped npm package `pi-ssh` is a different project; use the full `@michaelasper/pi-ssh` name.
+
+For a reproducible version:
+
+```bash
+pi install npm:@michaelasper/pi-ssh@0.1.1
+```
+
+Update an unpinned npm installation:
+
+```bash
+pi update npm:@michaelasper/pi-ssh
+```
+
+Pinned installations remain pinned; install a different explicit version to change them. To remove the package, pass the same source string used at installation:
+
+```bash
+pi remove npm:@michaelasper/pi-ssh
+```
+
+Git installation remains available with `pi install git:github.com/michaelasper/pi-ssh`. To work from a checkout instead:
+
+```bash
+git clone https://github.com/michaelasper/pi-ssh.git
+cd pi-ssh
+npm ci
+pi -e ./src/index.ts
+```
+
+For persistent loading from that checkout, run `pi install .`. Install only one source at a time; remove an old Git or local installation before switching to npm to avoid duplicate bash overrides.
+
 ## Default to a remote project
 
 With pi-ssh installed:

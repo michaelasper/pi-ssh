@@ -13,7 +13,8 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
     packed = subprocess.run(["npm", "pack", "--json", "--pack-destination", str(work)], cwd=ROOT,
                             check=True, capture_output=True, text=True)
     data = json.loads(packed.stdout)
-    info = data[0] if isinstance(data, list) else data['pi-ssh']
+    package_name = json.loads((ROOT / 'package.json').read_text())['name']
+    info = data[0] if isinstance(data, list) else data[package_name]
     for item in info["files"]:
         name = item["path"]
         assert name in ("package.json", "README.md", "LICENSE") or name.startswith(("src/", "docs/")), name
