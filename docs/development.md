@@ -61,6 +61,8 @@ The smoke test needs Python 3.12+. `npm run test:package` uses the development p
 
 Inspect the file list: `src/`, `README.md`, `docs/` and package metadata belong in the package; `.pi/`, `.artifacts/`, credentials, tests and local dependencies do not. Test `pi install /absolute/path/to/checkout` with a temporary `PI_CODING_AGENT_DIR` rather than modifying personal settings. Do not publish or push as part of verification.
 
+For maintainer-only OIDC staging, npm approval and pi.dev catalog discovery, see [the release guide](releasing.md).
+
 ## Dependency security
 
 ```bash

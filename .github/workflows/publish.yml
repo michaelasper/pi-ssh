@@ -1,0 +1,95 @@
+name: Stage npm release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: 'Stage on npm (requires a matching v<version> tag); false only verifies'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-stage-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26
+          package-manager-cache: false
+      - name: Validate package identity and release tag
+        env:
+          STAGE: ${{ github.event_name == 'push' || inputs.stage }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));
+          assert.equal(pkg.name, '@michaelasper/pi-ssh');
+          assert.equal(lock.packages[''].name, pkg.name);
+          assert.equal(lock.packages[''].version, pkg.version);
+          if (process.env.STAGE === 'true') {
+            assert.equal(process.env.GITHUB_REF, `refs/tags/v${pkg.version}`, 'Staging requires a tag matching package.json');
+          }
+          JS
+      - run: npm ci
+      - run: npm run check
+      - run: npm audit --audit-level=low
+      - run: npm audit --omit=dev --audit-level=low
+      - run: npm run test:package
+      - name: Pack the verified source
+        run: |
+          git diff --exit-code
+          mkdir -p "$RUNNER_TEMP/npm-package"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/npm-package"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: npm-package
+          path: ${{ runner.temp }}/npm-package/*.tgz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  stage:
+    needs: verify
+    if: github.repository == 'michaelasper/pi-ssh' && (github.event_name == 'push' || inputs.stage)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: npm-package
+          path: ${{ runner.temp }}/npm-package
+      - name: Stage the verified tarball with OIDC
+        shell: bash
+        run: |
+          shopt -s nullglob
+          packages=("$RUNNER_TEMP/npm-package/"*.tgz)
+          test "${#packages[@]}" -eq 1
+          npm stage publish "${packages[0]}" --access public --provenance
+          echo '### Awaiting npm approval' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Review this version in npm’s Staged Packages tab and approve with 2FA. Nothing is public until approved.' >> "$GITHUB_STEP_SUMMARY"

@@ -21,6 +21,8 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
     with tarfile.open(work / info["filename"]) as archive:
         archive.extractall(work, filter="data")
     package = work / "package"
+    assert json.loads((package / 'package.json').read_text())['license'] == 'MIT'
+    assert (package / 'LICENSE').read_text().startswith('MIT License\n')
     installed = subprocess.run(["npm", "install", "--omit=dev", "--no-fund"],
                                cwd=package, check=True, capture_output=True, text=True, timeout=120)
     assert 'npm warn' not in (installed.stdout + installed.stderr).lower(), (installed.stdout, installed.stderr)

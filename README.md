@@ -10,6 +10,7 @@ Give pi’s bash tool an SSH host—without moving your whole session.
 [![GitHub checks][ci-badge]][ci-url]
 [![GitHub release][release-badge]][release-url]
 [![Node.js][node-badge]][node-url]
+[![MIT licence][license-badge]][license-url]
 
 [Quick start](#quick-start) · [Usage](#usage) · [Configuration](#configuration) · [Documentation](#documentation)
 
@@ -129,6 +130,10 @@ Already running pi? Use `/reload` after installing. For a checkout, local develo
 | Contribute or reproduce the checks | [Development](https://github.com/michaelasper/pi-ssh/blob/main/docs/development.md) |
 | Inspect test and benchmark evidence | [Verification](https://github.com/michaelasper/pi-ssh/blob/main/docs/verification.md) |
 
+## Licence
+
+[MIT](https://github.com/michaelasper/pi-ssh/blob/main/LICENSE) © 2026 Michael Asper.
+
 [npm-badge]: https://img.shields.io/npm/v/@michaelasper/pi-ssh?color=cb3837
 [npm-url]: https://www.npmjs.com/package/@michaelasper/pi-ssh
 [ci-badge]: https://github.com/michaelasper/pi-ssh/actions/workflows/ci.yml/badge.svg?branch=main
@@ -137,3 +142,5 @@ Already running pi? Use `/reload` after installing. For a checkout, local develo
 [release-url]: https://github.com/michaelasper/pi-ssh/releases
 [node-badge]: https://img.shields.io/node/v/@michaelasper/pi-ssh
 [node-url]: https://nodejs.org/
+[license-badge]: https://img.shields.io/github/license/michaelasper/pi-ssh
+[license-url]: https://github.com/michaelasper/pi-ssh/blob/main/LICENSE

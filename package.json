@@ -1,6 +1,7 @@
 {
   "name": "@michaelasper/pi-ssh",
-  "version": "0.1.1",
+  "version": "0.1.2",
+  "license": "MIT",
   "description": "Optional SSH targeting for pi's bash tool",
   "type": "module",
   "keywords": [
@@ -23,6 +24,7 @@
   "files": [
     "src",
     "README.md",
+    "LICENSE",
     "docs"
   ],
   "pi": {

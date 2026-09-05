@@ -75,6 +75,12 @@ Version 0.1.1 introduces the scoped npm identity `@michaelasper/pi-ssh`; the bas
 
 For this distribution, all 15 tests, strict TypeScript checks, both npm audits and the production tarball smoke test passed again. The smoke test handles scoped package names and verifies zero installed production dependencies and no installation warnings. Authentication material is not part of the repository or package.
 
+## Next distribution: 0.1.2
+
+The next version adds the MIT licence, a manifest/discovery regression test and a stage-only OIDC release workflow. All 16 tests, strict TypeScript checks and both npm audits pass. The production smoke test verifies the MIT licence in the 14-file tarball, zero installed production dependencies and no installation warnings.
+
+The workflow separates verification from the OIDC staging job and never approves a release automatically. A verify-only workflow run is not evidence that npm accepted the trusted-publisher configuration; that requires a real staging run followed by maintainer approval. The [release guide](releasing.md) documents this boundary and the catalog requirements.
+
 ## Coverage limits
 
 - Real execution was verified from macOS, not Windows. IPv6 syntax is unit-tested; an IPv6 server was not used.
