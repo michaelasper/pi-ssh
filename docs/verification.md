@@ -13,7 +13,7 @@ These are observations from development of version 0.1.0, not cross-platform or 
 | Review: local settings | Regression test returned `unset:unset` instead of the configured prefix and shell marker. | 14 tests passed, including trusted/untrusted settings and no remote leakage. |
 | Review: target visibility | Regression test rendered only `$ pwd`, without a target or cwd. | 15 tests passed, including non-mutating headers and wrapping at 40, 80 and 120 columns. |
 
-The final 15-test suite and strict TypeScript checks pass. The suite also runs on the declared minimum Node.js version, **22.18.0**, using a temporary isolated Node installation.
+The final 15-test suite and strict TypeScript checks pass. The suite also runs on the declared minimum Node.js version, **22.19.0**, using a temporary isolated Node installation.
 
 Raw red/green logs are retained locally in ignored `.artifacts/01-*` through `.artifacts/06-*`. They are not package contents.
 
@@ -59,7 +59,15 @@ SSH command construction averaged approximately **0.63 µs** over 100,000 iterat
 
 ## Packaging
 
-A production tarball containing 12 allowlisted files passed an isolated `pi install` and live startup check. The extended bash schema was present without development dependencies or personal pi settings. Strict TypeScript checks also cover the real-host test and benchmark. GitHub Actions is configured for macOS and Linux on Node.js 22, 24 and 26; hosted CI results are not claimed before publication.
+A production tarball containing 12 allowlisted files passed an isolated `pi install` and live startup check. A normal `npm install --omit=dev` installed zero production dependencies and emitted no warnings, with zero production audit findings. The extended bash schema was present without development dependencies, legacy-peer flags or personal pi settings. Strict TypeScript checks also cover the real-host test and benchmark. The initial publication’s [six GitHub Actions jobs](https://github.com/michaelasper/pi-ssh/actions/runs/33984923551) passed on macOS and Linux with Node.js 22, 24 and 26.
+
+The packaging review followed the upstream [pi package guidance](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md): explicit `pi.extensions`, the `pi-package` keyword, narrow published files, optional `*` peers supplied by pi, and no bundled core packages or build/install hooks.
+
+## Dependency review before release
+
+Registry `latest` versions checked: pi **0.85.1**, TypeBox **1.3.27**, TypeScript **7.0.2** and Node typings **26.4.1**. All are pinned for development; `npm outdated` reports no outdated direct dependencies. Both the complete dependency audit and production-only audit report **zero vulnerabilities**. GitHub Actions uses the latest checked checkout **v7.0.1** and setup-node **v7.0.0**, pinned to immutable commits, with audit gates for all severities.
+
+A clean development install still reports the upstream `node-domexception@1.0.0` deprecation notice described in [development guidance](development.md#dependency-security). It is not a security advisory and is absent from production installs. No unsafe transitive override or disabled audit is used to conceal it. The minimum Node version was corrected to **22.19.0** to match pi’s declared engine requirement, and the 15-test suite passed on that exact version.
 
 ## Coverage limits
 

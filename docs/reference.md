@@ -2,9 +2,9 @@
 
 ## Compatibility
 
-Tested against `@earendil-works/pi-coding-agent` 0.85.1. The extension uses the public `createBashToolDefinition` API; older versions without that export are unsupported. Peer dependencies use `*` as required by pi package conventions, not as a claim that every pi version works.
+Tested against `@earendil-works/pi-coding-agent` 0.85.1. The extension uses the public `createBashToolDefinition` API; older versions without that export are unsupported. Peer dependencies use `*` as required by pi package conventions, not as a claim that every pi version works. They are optional peers because pi supplies them at runtime; a production installation adds no duplicate pi packages. Exact development versions and the lockfile make contributor installs reproducible.
 
-Local requirements: Node.js 22.18+, Bash and OpenSSH on macOS or Linux. Remote requirements: Bash on `PATH`, a POSIX-compatible login shell and non-interactive SSH authentication. Windows is not verified. Each remote command starts a fresh `bash -c` process, not an interactive or login Bash session.
+Local requirements: Node.js 22.19+, Bash and OpenSSH on macOS or Linux. Remote requirements: Bash on `PATH`, a POSIX-compatible login shell and non-interactive SSH authentication. Windows is not verified. Each remote command starts a fresh `bash -c` process, not an interactive or login Bash session.
 
 ## bash arguments
 

@@ -29,6 +29,6 @@ Use Node's test runner with TypeScript stripping, strict TypeScript checks, and 
 4. Isolated requested-model usability scenarios.
 5. Diataxis documentation, package-install smoke test, privacy and final checks.
 
-## Closeout
+## Initial implementation closeout (before publication)
 
 All five milestones are implemented. `docs/verification.md` maps test-first increments, review fixes, SSH behaviour, model comprehension, performance and package checks to recorded results. Final offline suite: 15 passing tests on Node.js 26.1.0 and 22.18.0; strict TypeScript checks pass. Real SSH, isolated requested-model scenarios and production package installation were rerun after the review fixes. No publication or push was performed.

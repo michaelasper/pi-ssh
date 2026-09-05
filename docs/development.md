@@ -54,9 +54,23 @@ Raw prompts, events and stderr are written under ignored `.artifacts/model-usabi
 
 ```bash
 npm pack --dry-run --json
-python3 scripts/package-smoke.py
+npm run test:package
 ```
 
-The smoke test needs Python 3.12+ and the `pi` CLI. It packs the source, installs production-only dependencies in a temporary directory, registers that package in isolated pi settings, and checks the live bash schema at session startup without making a model request.
+The smoke test needs Python 3.12+. `npm run test:package` uses the development pi CLI from `node_modules/.bin`. It packs the source, performs a normal production-only install in a temporary directory, rejects install warnings or duplicate dependencies, runs a production audit, registers that package in isolated pi settings, and checks the live bash schema at session startup without making a model request.
 
 Inspect the file list: `src/`, `README.md`, `docs/` and package metadata belong in the package; `.pi/`, `.artifacts/`, credentials, tests and local dependencies do not. Test `pi install /absolute/path/to/checkout` with a temporary `PI_CODING_AGENT_DIR` rather than modifying personal settings. Do not publish or push as part of verification.
+
+## Dependency security
+
+```bash
+npm outdated
+npm audit --audit-level=low
+npm audit --omit=dev --audit-level=low
+```
+
+The CI audit gates include all advisory severities. Core pi imports are optional `*` peers, not bundled dependencies. There are no third-party runtime dependencies, installation hooks or build steps in the distributed extension.
+
+npm 12’s `allowScripts` policy explicitly denies the reviewed, unnecessary development install hooks for `@google/genai` (a no-op), `protobufjs` (a dependency-version warning) and `esbuild` (binary preparation; platform binaries are already optional dependencies). The test and package-loading checks pass without them. npm’s audit is not disabled. Older npm releases do not enforce this policy; it is not a sandbox.
+
+A clean development install may emit an upstream `node-domexception@1.0.0` deprecation notice through pi’s Google provider dependency chain. This is not a vulnerability advisory and does not affect the dependency-free production install. Do not force incompatible transitive overrides merely to hide that notice.

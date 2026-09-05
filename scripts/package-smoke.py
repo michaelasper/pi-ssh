@@ -20,8 +20,14 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
     with tarfile.open(work / info["filename"]) as archive:
         archive.extractall(work, filter="data")
     package = work / "package"
-    subprocess.run(["npm", "install", "--omit=dev", "--ignore-scripts", "--legacy-peer-deps", "--no-audit", "--no-fund"],
-                   cwd=package, check=True, capture_output=True, text=True, timeout=120)
+    installed = subprocess.run(["npm", "install", "--omit=dev", "--no-fund"],
+                               cwd=package, check=True, capture_output=True, text=True, timeout=120)
+    assert 'npm warn' not in (installed.stdout + installed.stderr).lower(), (installed.stdout, installed.stderr)
+    dependencies = package / "node_modules"
+    assert not dependencies.exists() or not any(path.name != '.package-lock.json' for path in dependencies.iterdir()), "Production install pulled dependencies that pi already bundles"
+    audit = subprocess.run(["npm", "audit", "--omit=dev", "--json"], cwd=package,
+                           check=True, capture_output=True, text=True, timeout=30)
+    assert json.loads(audit.stdout)["metadata"]["vulnerabilities"]["total"] == 0
     smoke = work / "smoke.ts"
     smoke.write_text('''export default function(pi) {
   pi.on("session_start", () => {
@@ -42,4 +48,4 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
                             cwd=work, env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0 and "PI_SSH_PACKAGE_SMOKE_OK" in result.stdout + result.stderr, (result.stdout, result.stderr)
     assert not result.stderr.replace("PI_SSH_PACKAGE_SMOKE_OK", "").strip(), result.stderr
-    print(f"PASS production tarball: {len(info['files'])} allowlisted files; isolated pi install and bash schema registration")
+    print(f"PASS production tarball: {len(info['files'])} allowlisted files; zero installed production dependencies; zero audit findings; isolated pi install and bash schema registration")

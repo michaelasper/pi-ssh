@@ -16,7 +16,7 @@ Only the model-callable **bash** tool changes. File tools and `!` / `!!` command
 
 ## Try it
 
-Requirements: pi **0.85.1**, Node.js **22.18+**, local Bash and OpenSSH, and an authorised remote with Bash and a POSIX-compatible login shell. macOS and Linux are the intended local platforms; Windows is not verified.
+Requirements: pi **0.85.1**, Node.js **22.19+**, local Bash and OpenSSH, and an authorised remote with Bash and a POSIX-compatible login shell. macOS and Linux are the intended local platforms; Windows is not verified.
 
 From a local checkout:
 
