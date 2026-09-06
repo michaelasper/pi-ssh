@@ -2,9 +2,9 @@
 
 # pi-ssh
 
-**Local when you need it. Remote when you ask.**
+**One set of tools. Your choice of machine.**
 
-Give pi’s bash tool an SSH host—without moving your whole session.
+Run commands and work with files over SSH—without moving your pi session.
 
 [![npm version][npm-badge]][npm-url]
 [![GitHub checks][ci-badge]][ci-url]
@@ -12,63 +12,105 @@ Give pi’s bash tool an SSH host—without moving your whole session.
 [![Node.js][node-badge]][node-url]
 [![MIT licence][license-badge]][license-url]
 
-[Quick start](#quick-start) · [Usage](#usage) · [Configuration](#configuration) · [Documentation](#documentation)
+[Quick start](#quick-start) · [Migration](#migrate-from-bash-only-routing) · [Usage](#usage) · [Documentation](#documentation)
 
 </div>
 
+> [!WARNING]
+> **Breaking default-routing change:** `read`, `write`, `edit`, `find`, `grep` and `ls` now follow `--ssh-host` / `PI_SSH_HOST`, just like `bash`. With an SSH default, file calls that omit `host` access or modify the **remote** filesystem. Use `host="local"` for local files. With no configuration, calls remain local.
+
+Host-aware file tools require **0.2.0 or newer**; versions **0.1.x** are bash-only. See the [0.2.0 release notes](docs/release-0.2.0.md) for changes and migration requirements. The checkout instructions below work before npm release approval.
+
+## Why pi-ssh?
+
+Use the same tools to inspect, edit and test a remote project while keeping pi running locally. Choose a remote default for sustained work, or select SSH only when needed.
+
+- **Switch machines without switching tools.** All seven tools accept `host`, with a guaranteed local override.
+- **Keep familiar file operations.** Paginated text and image reads, parent-directory creation, multi-block edits and diffs, and filtered searches.
+- **Keep your SSH setup.** Existing aliases, keys, gateways and connection reuse still work.
+- **Keep familiar bash behaviour.** Streaming output, truncation, timeouts and trusted local shell settings are unchanged.
+
+There is no file synchronisation, persistent remote service or remote pi installation. This is not a sandbox or a remote job supervisor. User-entered `!` / `!!` commands and unrelated extension tools remain local.
+
+## Requirements
+
+- **Local:** [pi](https://github.com/earendil-works/pi) 0.85.1, Node.js 22.19+, Bash and OpenSSH. macOS and Linux are supported; Windows is not verified.
+- **Remote bash:** Bash on `PATH`, a POSIX-compatible login shell and non-interactive SSH authentication.
+- **Remote file tools:** Python 3.9+ on `PATH`; `find` also needs `fd` or `fdfind`, and `grep` needs ripgrep (`rg`). No remote Node.js or pi is required.
+
+Set up keys and verify the host fingerprint outside pi first. pi-ssh never installs remote utilities or changes SSH configuration or security settings. See [utility lookup and compatibility](docs/reference.md#compatibility) for supported search locations.
+
 ## Quick start
 
-With [pi](https://github.com/earendil-works/pi) installed:
+From this repository checkout, with pi installed and no other pi-ssh installation active:
 
 ```bash
-pi install npm:@michaelasper/pi-ssh
-pi
+pi -e ./src/index.ts --ssh-host local
 ```
 
 Then ask:
 
-> On SSH host `build`, run `uname -s`. Then run `pwd` on my local machine.
+> On SSH host `build`, run `uname -s`. Then read `/etc/os-release` on that same host. Finally, run `pwd` on my local machine.
 
-Replace `build` with an SSH alias or `user@host` you can already access. pi selects the target through the existing **bash** tool—there is no new tool to learn.
+This sample assumes a Linux remote with `/etc/os-release`. Replace `build` with an authorised SSH alias or `user@host`. The explicit local session default keeps other calls local; pi uses `host: "build"` for the remote calls.
 
-**Requirements:** pi 0.85.1, Node.js 22.19+, local Bash/OpenSSH, and remote Bash with a POSIX-compatible login shell. macOS and Linux are supported; Windows is not verified. Set up SSH keys and verify the host fingerprint outside pi first.
+For persistent checkout loading and existing npm/Git installations, see [installation and maintenance](docs/how-to.md#install-update-or-remove). Install only one source at a time.
 
-> [!IMPORTANT]
-> Only **bash** gains remote execution. File tools and `!` / `!!` commands stay local. `host="local"` always selects your local machine, even with a remote default.
+## Migrate from bash-only routing
+
+Previously, a remote bash default did not affect file tools. Now, under `pi --ssh-host build --ssh-cwd /srv/project`, this `read` call reads the **remote** README:
+
+```json
+{"path": "README.md"}
+```
+
+To keep reading the local checkout, add `host`:
+
+```json
+{"path": "README.md", "host": "local"}
+```
+
+Apply the same change to local `write`, `edit`, `find`, `grep` and `ls` calls in your prompts, templates and integrations. Alternatively, start with `pi --ssh-host local` and explicitly name the SSH host on remote calls, including bash.
+
+**Bash full-output artifacts are always LOCAL.** Read a reported artifact with `{"path": "/actual/path/from/the/notice", "host": "local"}` even when its command ran remotely. See the [migration guide](docs/how-to.md#migrate-existing-prompts-and-integrations).
 
 ## Usage
 
-### Choose a host per command
+Ask in plain language; pi supplies the arguments. These are sample tool calls, not recorded test results.
 
-Ask in plain language; pi supplies the arguments. Example bash calls:
+### Choose a machine per call
 
-```json
-{"command": "uname -s", "host": "build"}
-```
+Read a remote file:
 
 ```json
-{"command": "git status --short", "host": "local"}
+{"path": "~/project/README.md", "host": "build", "offset": 1, "limit": 80}
 ```
 
-Omit `host` to use the session default. With no configuration, that default is local.
+Search the local checkout with `grep`, even with a remote default:
+
+```json
+{"pattern": "TODO", "path": "src", "host": "local"}
+```
+
+An explicit SSH target overrides the configured host. `host="local"` always delegates to native local pi; omitted `host` follows the configured default.
 
 ### Work in a remote project
 
-Make a remote host and directory the default for the session:
+With this checkout installed:
 
 ```bash
 pi --ssh-host build --ssh-cwd /srv/project
 ```
 
-Ask “Run the tests” for remote work, or “Run `git status` locally” to switch back for a command. The tool header shows the selected target and remote directory.
+Now “Read the README and run the tests” can use remote `read` and `bash` calls without `host`. Relative file paths use `/srv/project`; absolute paths refer to the selected remote filesystem, and `~/` uses that remote account’s home. Nothing is mapped from the local checkout.
 
-To override the directory or limit a single command:
+File tools add **only `host`**, not per-call `cwd`. Use their existing `path` argument to select another directory. Bash retains its remote-only absolute `cwd` override:
 
 ```json
-{"command": "npm test", "host": "build", "cwd": "/srv/project", "timeout": 60}
+{"command": "npm test", "host": "build", "cwd": "/srv/another-project", "timeout": 60}
 ```
 
-`cwd` is remote-only and must be an absolute path. Without a configured remote directory, each call starts in the remote login directory—not your local checkout.
+Headers show the target and remote directory. Omitted configuration is labelled “current default”; restored transcripts do not provide a durable historical target for omitted fields.
 
 ## Configuration
 
@@ -78,61 +120,24 @@ To override the directory or limit a single command:
 | `--ssh-cwd` | `PI_SSH_CWD` | Remote login directory |
 | `--ssh-connect-timeout` | `PI_SSH_CONNECT_TIMEOUT` | 10 seconds |
 
-Per-call arguments override CLI flags; CLI flags override environment variables. Keep identities, ports, jump hosts and connection reuse in your normal SSH configuration.
+Per-call `host` overrides CLI flags; CLI flags override environment variables. The configured remote cwd applies to **every** remote host, including explicit host overrides. Only bash has a per-call `cwd` override.
 
-```bash
-PI_SSH_HOST=build PI_SSH_CWD=/srv/project pi
-```
-
-Need a quick connection check?
-
-```bash
-ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes build 'bash -c "printf ready"'
-```
-
-See the [reference](https://github.com/michaelasper/pi-ssh/blob/main/docs/reference.md) for validation and precedence, or the [how-to guide](https://github.com/michaelasper/pi-ssh/blob/main/docs/how-to.md) for keys, ports and troubleshooting.
-
-## Why pi-ssh?
-
-Keep your checkout and file tools local while running builds or diagnostics on another machine.
-
-- **Switch machines without switching tools.** Per-call targets and a guaranteed local override.
-- **Keep your SSH setup.** Existing aliases, keys, gateways and connection reuse still work.
-- **Keep familiar bash behaviour.** Streaming output, truncation, timeouts and trusted local shell settings.
-- **Install less.** Zero additional production dependencies, no daemon, and nothing to install remotely beyond Bash.
-
-This is not a remote filesystem or a sandbox. Cancelling stops the local SSH client, not necessarily every remote descendant. Full-output files are always stored locally.
-
-## Other installation options
-
-Pin the npm release:
-
-```bash
-pi install npm:@michaelasper/pi-ssh@0.1.1
-```
-
-Or install from GitHub:
-
-```bash
-pi install git:github.com/michaelasper/pi-ssh
-```
-
-Already running pi? Use `/reload` after installing. For a checkout, local development, updating or removing the extension, see [installation and maintenance](https://github.com/michaelasper/pi-ssh/blob/main/docs/how-to.md#install-update-or-remove).
+The [reference](docs/reference.md) lists arguments, path rules and output limits. The [how-to guide](docs/how-to.md) covers keys, ports, missing utilities and connection failures. SSH errors never fall back locally. Failed mutations may be partial; an unacknowledged write blocks further mutations of that file until pi restarts. Inspect the target and confirm the old operation has stopped before restarting and retrying.
 
 ## Documentation
 
 | You want to… | Start here |
 | --- | --- |
-| Run your first remote command | [Tutorial](https://github.com/michaelasper/pi-ssh/blob/main/docs/tutorial.md) |
-| Configure a remote project or fix a connection | [How-to guides](https://github.com/michaelasper/pi-ssh/blob/main/docs/how-to.md) |
-| Look up arguments, defaults and limits | [Reference](https://github.com/michaelasper/pi-ssh/blob/main/docs/reference.md) |
-| Understand execution and trust boundaries | [Explanation](https://github.com/michaelasper/pi-ssh/blob/main/docs/explanation.md) |
-| Contribute or reproduce the checks | [Development](https://github.com/michaelasper/pi-ssh/blob/main/docs/development.md) |
-| Inspect test and benchmark evidence | [Verification](https://github.com/michaelasper/pi-ssh/blob/main/docs/verification.md) |
+| Run a command and read a file remotely | [Tutorial](docs/tutorial.md) |
+| Migrate defaults, configure a project or fix a connection | [How-to guides](docs/how-to.md) |
+| Look up arguments, defaults and limits | [Reference](docs/reference.md) |
+| Understand memory, mutation and trust boundaries | [Explanation](docs/explanation.md) |
+| Contribute or reproduce the checks | [Development](docs/development.md) |
+| Inspect recorded checks and their coverage limits | [Verification](docs/verification.md) |
 
 ## Licence
 
-[MIT](https://github.com/michaelasper/pi-ssh/blob/main/LICENSE) © 2026 Michael Asper.
+[MIT](LICENSE) © 2026 Michael Asper.
 
 [npm-badge]: https://img.shields.io/npm/v/@michaelasper/pi-ssh?color=cb3837
 [npm-url]: https://www.npmjs.com/package/@michaelasper/pi-ssh

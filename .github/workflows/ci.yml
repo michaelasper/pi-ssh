@@ -18,6 +18,17 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: npm
       - run: npm ci
+      - name: Provision local test utilities on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes python3 fd-find ripgrep
+          mkdir -p "$RUNNER_TEMP/pi-ssh-test-bin"
+          ln -s "$(command -v fdfind)" "$RUNNER_TEMP/pi-ssh-test-bin/fd"
+          echo "$RUNNER_TEMP/pi-ssh-test-bin" >> "$GITHUB_PATH"
+      - name: Provision local test utilities on macOS
+        if: runner.os == 'macOS'
+        run: brew install fd ripgrep
       - run: npm run check
       - run: npm audit --audit-level=low
       - run: npm audit --omit=dev --audit-level=low

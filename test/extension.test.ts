@@ -7,19 +7,21 @@ import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-a
 import extension from '../src/index.ts';
 import type { createSshBashTool } from '../src/tool.ts';
 
-test('registers only bash and three flags; resolves defaults after flags become available', async () => {
+test('registers seven host-aware tools and three flags; resolves defaults after flags become available', async () => {
   const events = new Map<string, Function>();
   const flags: string[] = [];
+  const names: string[] = [];
   let ready = false;
   let tool!: ReturnType<typeof createSshBashTool>;
   const api = {
-    registerTool: (value: typeof tool) => { tool = value; },
+    registerTool: (value: typeof tool) => { tool = value; names.push(value.name); assert.ok(value.parameters.properties.host); },
     registerFlag: (name: string) => { flags.push(name); },
     getFlag: (name: string) => { assert.ok(ready); return name === 'ssh-host' ? 'build' : undefined; },
     on: (name: string, handler: Function) => { events.set(name, handler); },
   } as unknown as ExtensionAPI;
   extension(api);
   assert.equal(tool.name, 'bash');
+  assert.deepEqual(names, ['read', 'write', 'edit', 'find', 'grep', 'ls', 'bash']);
   assert.deepEqual(flags, ['ssh-host', 'ssh-cwd', 'ssh-connect-timeout']);
   assert.deepEqual([...events.keys()], ['session_start', 'before_agent_start']);
   await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionContext), /not initialized/);
@@ -30,18 +32,23 @@ test('registers only bash and three flags; resolves defaults after flags become 
   assert.match(prompt.systemPrompt, /build/);
   assert.match(prompt.systemPrompt, /remain local/);
   assert.match(prompt.systemPrompt, /host="local"/);
+  assert.match(prompt.systemPrompt, /bash\/read\/write\/edit\/find\/grep\/ls/);
+  assert.match(prompt.systemPrompt, /full-output artifacts/);
+  assert.doesNotMatch(prompt.systemPrompt, /Only bash supports remote|Other tools and !/);
 });
 
 test('bad configuration remains blocked across startup and reports a useful model instruction', async () => {
   const events = new Map<string, Function>();
+  const registered: Array<{ execute: (...args: any[]) => Promise<any> }> = [];
   let tool!: ReturnType<typeof createSshBashTool>;
   extension({
-    registerTool: (value: typeof tool) => { tool = value; }, registerFlag: () => {},
+    registerTool: (value: typeof tool) => { tool = value; registered.push(value); }, registerFlag: () => {},
     getFlag: (name: string) => name === 'ssh-host' ? '-bad' : undefined,
     on: (name: string, handler: Function) => events.set(name, handler),
   } as unknown as ExtensionAPI);
   await events.get('session_start')!({}, {});
   await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionContext), /Invalid SSH host/);
+  for (const fileTool of registered) await assert.rejects(fileTool.execute('blocked', { host: 'local', path: 'never' }, undefined, undefined, {}), /Invalid SSH host/);
   const prompt = await events.get('before_agent_start')!({ systemPrompt: '' }, {});
   assert.match(prompt.systemPrompt, /blocked/i);
 });

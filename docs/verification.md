@@ -1,6 +1,53 @@
 # Verification results
 
-These are observations from development of version 0.1.0, not cross-platform or model reliability guarantees. Private target names, local paths and raw transcripts are excluded.
+## Release preparation: 0.2.0
+
+After updating version metadata and release documentation:
+
+| Command | Outcome |
+| --- | --- |
+| `npm run check` | All 53 tests passed, with no failures or skips; strict TypeScript checks passed. |
+| `npm run test:package` | The 21-file production tarball passed isolated pi installation and startup; all seven host-aware schemas registered; zero installed production dependencies and zero audit findings. |
+| `npm audit --audit-level=low` and `npm audit --omit=dev --audit-level=low` | Both reported zero vulnerabilities. |
+| `PI_SSH_TEST_HOST=<authorised-target> npm run test:ssh` | Both scenarios failed at their initial connection because the previously authorised host was unreachable (SSH connection timeout). No test fixtures were created. This release-time rerun does not supersede the earlier successful SSH evidence below. |
+
+Before release preparation, live calls through the installed extension also passed for all six file tools on the authorised remote and locally, including special-character paths, pagination, multi-block edits, a remote PNG read, rejected edits without modification and host isolation. One local read overlapped an edit and failed; a sequential retry passed. All live-test fixtures were removed. No feature implementation changed between those successful checks and release preparation.
+
+Local release logs are retained in ignored `.artifacts/release-0.2.0-{check,package,audit,ssh}.log`. These checks do not establish npm staging or public publication. Consult the [release workflow](https://github.com/michaelasper/pi-ssh/actions/workflows/publish.yml) for hosted verification and staging outcomes; npm still requires maintainer approval.
+
+## Host-aware file tools: implementation verification
+
+The current source adds `host` to read, write, edit, find, grep and ls. These observations are from macOS with Node.js 26.1.0 and pi 0.85.1; they are not cross-platform or model-reliability guarantees. Private target names, fixture paths and raw transcripts are excluded.
+
+Recorded commands:
+
+| Command | Outcome |
+| --- | --- |
+| `npm run check` | 53 tests passed; zero failed, cancelled or skipped; strict TypeScript checks passed. |
+| `npm run test:package` | Production tarball passed isolated pi installation and startup; all seven host-aware schemas registered; both Python helpers included; zero installed production dependencies and zero production audit findings. |
+| `PI_SSH_TEST_HOST=<authorised-target> npm run test:ssh` | Both opt-in scenarios passed: existing bash behaviour and all six file tools. Temporary local and remote fixtures were removed and remote removal was asserted. |
+
+The real target was explicitly authorised. Python 3.9.6 and ripgrep 15.2.0 were already installed there. With separate user authorisation, Homebrew installed fd 10.5.0. The extension itself never installs prerequisites. No SSH security, credentials, shell profile or global `PATH` settings were changed; the search helpers found the Homebrew executables through their documented fallback locations. No remote pi installation, persistent helper or file mirror was created.
+
+Coverage includes:
+
+- Six schemas add only optional `host`; native local results and live session cwd; configuration precedence and errors blocking all seven tools.
+- Default and explicit remote execution, explicit local override for every tool, configured remote cwd, remote login cwd, absolute paths, selected-machine home expansion, `@`, file URLs, Unicode-space and screenshot conveniences, symlink canonicalisation, special-character paths and literal contents over stdin.
+- Native read pagination, line and byte truncation, image results and signature parity for JPEG, PNG, GIF, WebP and BMP (including malformed headers and animated-PNG exclusions). Real SSH image execution used PNG; other formats have local differential signature coverage.
+- Native edit multi-replacement matching against the original, overlap/non-unique/missing-match rejection without writing, BOM/CRLF preservation, diffs and unified patches. Concurrent edit/edit and write/edit calls sharing remote symlink or hard-link aliases retain both changes. Queue tests distinguish hosts and unrelated files and recover after acknowledged failures and cancellation. An unacknowledged mutation transport failure blocks queued and future mutations of the affected path/inode until pi restarts; reads remain available for inspection.
+- Find and grep differential coverage for ignore rules, nested repositories, glob/regex handling, case/literal flags, context, result limits and byte limits; ls sorting, hidden files, symlinks, skipped stat failures and entry limits. Search output has no artificial 2,000-line cap. Intentional safety differences: remote find uses NUL framing instead of trimming/splitting filenames, and remote grep preserves Unicode line separators in JSON records and rejects malformed utility output rather than silently discarding it.
+- Mocked SSH authentication failure, malformed protocol output, missing Python/search utilities, pre-aborted and active cancellation, bounded stderr and subprocess cleanup. Active writes settle before cancellation releases the mutation queue. Real SSH includes existing bash timeout/active-cancellation checks and pre-aborted file mutation.
+- Target headers at narrow and wide widths, native result rendering and prevention of local edit previews for remote targets, including a streamed host override arriving after an initial local-default header. A local overflow artifact from remote bash is read with `host="local"`.
+
+Current README, tutorial, how-to, reference, explanation, development and plan guidance were re-read. A source/docs scan found no obsolete guidance claiming that only bash can run remotely; historical bash-only records remain explicitly labelled. The CI workflows now explicitly provision local Python/fd/rg test prerequisites; both YAML files parsed successfully and `git diff --check` passed. No hosted workflow was triggered as part of that implementation verification.
+
+Coverage limits: Windows, the hosted CI matrix and Linux-to-remote execution were not run in this record. There is no multiprocess/external-editor locking, transactional rollback or guarantee of terminating arbitrary remote descendants after disconnect. Complete file payloads and directory listings are buffered before native output limits; pagination is not a bounded-network-transfer promise. The existing model-comprehension and benchmark results below apply to the earlier bash-only implementation, not the new file tools. No release or publication was performed as part of that implementation verification.
+
+Raw local logs are retained in ignored `.artifacts/file-tools-check.log`, `.artifacts/file-tools-focused.log`, `.artifacts/file-tools-ssh-e2e.log` and `.artifacts/file-tools-package.log` and `.artifacts/file-tools-guidance.log`.
+
+## Historical bash-only verification
+
+The following sections describe development and distribution of versions 0.1.0–0.1.2 before the file-tool extension. They are retained as historical evidence, not current file-tool coverage.
 
 ## Test-first development
 

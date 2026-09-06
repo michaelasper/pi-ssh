@@ -19,11 +19,11 @@ export function createSshBashTool(getConfig: () => Config, localOptions?: Pick<B
   return {
     ...local,
     parameters,
-    description: `${local.description} Set host to an SSH alias or user@host for remote Bash; host="local" always runs locally. Omitted host uses the configured default. Remote cwd is independent of the local project. Full output files are always LOCAL. SSH is non-interactive; configure keys and known_hosts first. Other tools and ! commands remain local.`,
+    description: `${local.description} Set host to an SSH alias or user@host for remote Bash; host="local" always runs locally. Omitted host uses the configured default. Remote cwd is independent of the local project. Full output files are always LOCAL. SSH is non-interactive; configure keys and known_hosts first. read/write/edit/find/grep/ls also accept host. Other extension tools and ! commands remain local; read local output artifacts with host="local".`,
     promptSnippet: 'Execute Bash locally or on an SSH host; host="local" forces local execution',
     promptGuidelines: [
       'Use bash with host for SSH execution rather than embedding ssh in command. bash host="local" explicitly selects this machine.',
-      'Only bash supports remote execution. read, write, edit and bash full-output files are local. Local PI_* session variables are not explicitly forwarded remotely.',
+      'bash/read/write/edit/find/grep/ls support host and follow the SSH default. Bash full-output files are always local: use read with host="local" to open them. Other extension tools and ! / !! remain local. Local PI_* session variables are not explicitly forwarded remotely.',
     ],
     renderCall(input: Partial<Static<typeof parameters>>, theme: Parameters<NonNullable<typeof local.renderCall>>[1],
       context: Parameters<NonNullable<typeof local.renderCall>>[2]) {

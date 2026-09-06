@@ -23,6 +23,8 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
     package = work / "package"
     assert json.loads((package / 'package.json').read_text())['license'] == 'MIT'
     assert (package / 'LICENSE').read_text().startswith('MIT License\n')
+    for helper in ('remote-fs.py', 'remote-search.py'):
+        assert (package / 'src' / helper).is_file(), f'Missing remote helper: {helper}'
     installed = subprocess.run(["npm", "install", "--omit=dev", "--no-fund"],
                                cwd=package, check=True, capture_output=True, text=True, timeout=120)
     assert 'npm warn' not in (installed.stdout + installed.stderr).lower(), (installed.stdout, installed.stderr)
@@ -34,9 +36,12 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
     smoke = work / "smoke.ts"
     smoke.write_text('''export default function(pi) {
   pi.on("session_start", () => {
-    const tool = pi.getAllTools().find(t => t.name === "bash");
-    const ok = tool?.parameters?.properties?.host && tool?.parameters?.properties?.cwd
-      && tool.sourceInfo.source !== "builtin";
+    const all = pi.getAllTools();
+    const ok = ["bash", "read", "write", "edit", "find", "grep", "ls"].every(name => {
+      const tool = all.find(t => t.name === name);
+      return tool?.parameters?.properties?.host && tool.sourceInfo.source !== "builtin"
+        && (name === "bash" ? tool.parameters.properties.cwd : !tool.parameters.properties.cwd);
+    });
     console.log(ok ? "PI_SSH_PACKAGE_SMOKE_OK" : "PI_SSH_PACKAGE_SMOKE_FAILED");
     process.exit(ok ? 0 : 1);
   });
@@ -51,4 +56,4 @@ with tempfile.TemporaryDirectory(prefix="pi-ssh-package-") as temporary:
                             cwd=work, env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode == 0 and "PI_SSH_PACKAGE_SMOKE_OK" in result.stdout + result.stderr, (result.stdout, result.stderr)
     assert not result.stderr.replace("PI_SSH_PACKAGE_SMOKE_OK", "").strip(), result.stderr
-    print(f"PASS production tarball: {len(info['files'])} allowlisted files; zero installed production dependencies; zero audit findings; isolated pi install and bash schema registration")
+    print(f"PASS production tarball: {len(info['files'])} allowlisted files; zero installed production dependencies; zero audit findings; isolated pi install and seven host-aware schemas")

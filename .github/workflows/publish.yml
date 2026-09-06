@@ -46,6 +46,13 @@ jobs:
           }
           JS
       - run: npm ci
+      - name: Provision local test utilities
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes python3 fd-find ripgrep
+          mkdir -p "$RUNNER_TEMP/pi-ssh-test-bin"
+          ln -s "$(command -v fdfind)" "$RUNNER_TEMP/pi-ssh-test-bin/fd"
+          echo "$RUNNER_TEMP/pi-ssh-test-bin" >> "$GITHUB_PATH"
       - run: npm run check
       - run: npm audit --audit-level=low
       - run: npm audit --omit=dev --audit-level=low

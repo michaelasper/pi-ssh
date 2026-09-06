@@ -2,6 +2,8 @@
 
 Releases use GitHub Actions OIDC, not an npm token. The workflow stages a verified tarball; a maintainer approves it with npm two-factor authentication before it becomes public.
 
+Use this process only for an explicitly authorised release. Documentation and successful staging do not establish a public npm release; maintainer approval is still required.
+
 ## Configure npm once
 
 The package must already exist publicly on npm as `@michaelasper/pi-ssh`. Staging cannot create a brand-new package. If `npm view @michaelasper/pi-ssh` returns 404, verify the package name, visibility and completion of the initial interactive publication first.
@@ -32,9 +34,11 @@ This performs clean installation, tests, type checks, both npm audits and the pr
 
 ## Prepare a new version
 
-Update `package.json` and the lockfile, then commit and push the release source to `main`. Each npm version is immutable; never reuse a published version or move an existing release tag.
+For an explicitly authorised release, update `package.json` and the lockfile, then commit and push the release source to `main`. Each npm version is immutable; never reuse a published version or move an existing release tag.
 
-For an ordinary patch release:
+The host-aware file-tool change alters default routing for existing users with `--ssh-host` / `PI_SSH_HOST`. Do not treat it as an ordinary patch by assumption. Choose the version deliberately and include a prominent breaking-change notice linking to [migration instructions](how-to.md#migrate-existing-prompts-and-integrations): all six file tools now follow the SSH default, `host="local"` preserves local calls, file tools have no per-call `cwd`, and bash artifacts stay local. Include the new remote Python/fd/rg prerequisites. Check [recorded verification](verification.md) for current seven-tool evidence rather than relying on historical bash-only results.
+
+For a separate ordinary patch release, the existing command sequence is:
 
 ```bash
 npm version patch --no-git-tag-version

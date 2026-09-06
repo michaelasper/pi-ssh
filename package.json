@@ -1,8 +1,8 @@
 {
   "name": "@michaelasper/pi-ssh",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "Optional SSH targeting for pi's bash tool",
+  "description": "Optional SSH targeting for pi's bash and file tools",
   "type": "module",
   "keywords": [
     "pi-package",
@@ -45,9 +45,13 @@
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
   "peerDependenciesMeta": {
+    "@earendil-works/pi-tui": {
+      "optional": true
+    },
     "@earendil-works/pi-coding-agent": {
       "optional": true
     },
@@ -57,6 +61,7 @@
   },
   "devDependencies": {
     "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-tui": "0.85.1",
     "@types/node": "26.4.1",
     "typebox": "1.3.27",
     "typescript": "7.0.2"
