@@ -38,6 +38,11 @@ if host == 'delay':
 if host == 'hang':
     time.sleep(10)
     sys.exit(0)
+if host == 'flood':
+    sys.stdout.write('x' * 1048576)
+    sys.stdout.flush()
+    time.sleep(10)
+    sys.exit(0)
 root = os.path.join(os.environ['PI_SSH_FAKE_ROOT'], host)
 os.chdir(os.path.join(root, 'home'))
 os.environ['HOME'] = os.path.join(root, 'home')

@@ -80,3 +80,12 @@ test('mutation queue preserves registration order, canonical aliases, independen
   await q.run('alpha', async () => path('/file'), async () => { order.push('recovered'); });
   assert.equal(order.at(-1), 'recovered');
 });
+
+test('oversized transport responses are cut off with a named limit instead of buffering', async () => {
+  const f = fileFixture();
+  try {
+    const start = performance.now();
+    await assert.rejects(new RemoteClient('flood', 10, undefined, 4096).resolve('a', undefined), /response exceeds the 4096 byte limit/);
+    assert.ok(performance.now() - start < 5000, 'the client must stop the response, not wait for the peer');
+  } finally { f.cleanup(); }
+});

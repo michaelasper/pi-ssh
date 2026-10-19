@@ -32,7 +32,7 @@ Configuration is resolved at session start or reload. Connection reuse remains O
 
 Bash’s retained output tail is bounded, but its full-output artifact is a local disk-backed file that can grow until cleaned up. Even after a remote command, reading that artifact requires `host="local"`; a remote default does not move the artifact.
 
-Remote file transport has a different resource profile. Read fetches the entire remote file before native pagination, truncation or image processing. JSON stdout responses are buffered locally; encoded file data and decoded buffers can coexist in memory. Grep context may also require reading full remote files. A small read `limit` therefore bounds returned text, not network transfer or peak memory.
+Remote file transport has a different resource profile. Read fetches the entire remote file before native pagination, truncation or image processing. JSON stdout responses are buffered locally; encoded file data and decoded buffers can coexist in memory. Grep context may also require reading full remote files. A small read `limit` therefore bounds returned text, not network transfer or peak memory. Hard caps keep the failure bounded and explicit. Remote reads refuse files over 32 MiB, and the local transport stops a helper response over 64 MiB. Both errors name the size and the limit instead of exhausting memory.
 
 Native text and search output caps protect the model’s context, not every resource involved in producing it. This design prioritises native behaviour without a remote service; it does not promise streaming file access or bounded memory for arbitrarily large files.
 

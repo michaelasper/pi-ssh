@@ -1,5 +1,11 @@
 # Verification results
 
+## Bounded remote payloads: 0.6.0
+
+Remote reads now refuse files over 33,554,432 bytes with an error that names the size and the limit. The guard covers read, the read inside edit, and the context load inside grep. Grep without context still searches such files. The local transport also stops any helper response over 67,108,864 bytes.
+
+Evidence. `npm run check` passed 56 tests. New tests build a sparse 33,554,433-byte file and assert the exact size and limit in the read, edit, and grep-context errors, plus a flooding fake SSH peer that the client cuts off at a test-sized limit. `npm run test:e2e` passed both real-SSH scenarios, including a remotely truncated sparse file that the read tool rejects. `npm run test:package` passed.
+
 ## Target visibility: 0.5.0
 
 The session now shows its SSH target before any tool runs. A `/ssh` command reports the default host, remote cwd, and connection timeout. The footer shows `ssh: <host>` under a remote default and `ssh: config error` for invalid configuration. Local defaults show nothing.

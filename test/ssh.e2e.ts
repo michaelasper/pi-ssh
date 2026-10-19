@@ -126,6 +126,8 @@ test('real SSH file tools: all routes, native contracts, host-local isolation an
     await assert.rejects(files.write.execute('cancel', { path: 'never', content: 'never' }, AbortSignal.abort(), undefined, fileCtx), /aborted/);
     assert.equal(text(await run(`test ! -e ${quote(`${root}/never`)} && printf clean`)), 'clean');
     await assert.rejects(files.read.execute('missing', { path: 'missing' }, undefined, undefined, fileCtx), /No such file/);
+    await run(`truncate -s 33554433 ${quote(`${root}/big.txt`)}`);
+    await assert.rejects(files.read.execute('toobig', { path: 'big.txt' }, undefined, undefined, fileCtx), /33554433 bytes.*limit is 33554432 bytes/s);
     // Even a remote bash overflow produces a LOCAL artifact, readable with host=local.
     const overflow = await run("printf '%060000d' 0");
     try {

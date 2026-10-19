@@ -20,6 +20,8 @@ import threading
 
 
 STDERR_LIMIT = 16 * 1024
+# Same bound as remote-fs.py. Context loading reads the whole matched file.
+READ_LIMIT_BYTES = 32 * 1024 * 1024
 
 
 class Cancelled(BaseException):
@@ -201,6 +203,12 @@ def remote_grep(request, locate=locate_tool):
         cached.add(file_path)
         try:
             with open(file_path, "rb") as source:
+                size = os.fstat(source.fileno()).st_size
+                if size > READ_LIMIT_BYTES:
+                    raise RuntimeError(
+                        f"Remote file {file_path} is {size} bytes; the remote read limit is "
+                        f"{READ_LIMIT_BYTES} bytes (32 MiB). Search it without context, or read a "
+                        "slice with bash on the same host.")
                 content = base64.b64encode(source.read()).decode("ascii")
         except OSError:
             # Only an actual remote OS read failure gets the native fallback.

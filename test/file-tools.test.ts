@@ -178,3 +178,24 @@ test('remote ls preserves ordering, hidden entries, symlink stats, limits and er
     await assert.rejects(tools.ls.execute('test', { path: 'z' }, undefined, undefined, f.ctx), /Not a directory/);
   } finally { f.cleanup(); }
 });
+
+test('remote files past the read limit fail with sizes instead of loading into memory', async () => {
+  const f = fileFixture();
+  try {
+    const { openSync, writeSync, ftruncateSync, closeSync } = await import('node:fs');
+    const limit = 32 * 1024 * 1024;
+    const big = join(f.root, 'alpha/work/big.txt');
+    const fd = openSync(big, 'w');
+    writeSync(fd, 'needle\n');
+    ftruncateSync(fd, limit + 1);
+    closeSync(fd);
+    const tools = createSshFileTools(() => config('alpha', join(f.root, 'alpha/work')));
+    await assert.rejects(tools.read.execute('big', { path: 'big.txt' }, undefined, undefined, f.ctx),
+      /33554433 bytes.*limit is 33554432 bytes.*bash/s);
+    await assert.rejects(tools.edit.execute('big', { path: 'big.txt', edits: [{ oldText: 'needle', newText: 'pin' }] }, undefined, undefined, f.ctx),
+      /limit is 33554432 bytes/);
+    await assert.rejects(tools.grep.execute('big', { path: 'big.txt', pattern: 'needle', context: 1 }, undefined, undefined, f.ctx),
+      /big\.txt.*33554433 bytes.*limit is 33554432 bytes/s);
+    assert.match(text(await tools.grep.execute('big-nocontext', { path: 'big.txt', pattern: 'needle' }, undefined, undefined, f.ctx)), /needle/);
+  } finally { f.cleanup(); }
+});

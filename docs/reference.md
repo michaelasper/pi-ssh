@@ -133,6 +133,8 @@ Find, grep and ls do not share read’s separate 2,000-line cap. Truncation and 
 
 **Pagination is not network streaming.** Remote read loads the entire file into memory before native pagination, image processing and truncation. The SSH stdout protocol buffers complete responses, including large file data; grep context can also require full file reads. Output limits bound the returned tool text, not transport or process memory.
 
+Two hard limits bound that memory. A remote file read, including the read inside edit and the context load inside grep, refuses files over 33,554,432 bytes (32 MiB). The error names the file size and the limit. Slice such files with bash on the same host, or grep them without context. The local transport also stops any single helper response over 67,108,864 bytes (64 MiB) and fails the call.
+
 ### Mutation queue and cancellation
 
 Remote write and edit resolve and canonicalise paths on the selected host. Extension-owned mutations reserve both the **literal SSH target string plus canonical remote path** and the existing file’s device/inode identity, covering the full read–modify–write window. The path reservation bridges file creation; the inode reservation also covers hard links. Symlink and hard-link aliases on the same target share a queue; different target strings remain distinct, even if two aliases reach the same machine. This is not a lock against external editors, bash commands or other processes.

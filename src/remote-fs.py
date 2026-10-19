@@ -8,6 +8,11 @@ import sys
 import unicodedata
 
 
+# Remote reads load the whole file before local pagination. Refuse files
+# that would blow up memory on both machines; bash can slice them instead.
+READ_LIMIT_BYTES = 32 * 1024 * 1024
+
+
 def resolve(request):
     path = request['path']
     if path == '~' or path.startswith('~/'):
@@ -40,7 +45,17 @@ def run(request):
         if request.get('editable') and not os.access(path, os.R_OK | os.W_OK):
             raise PermissionError('File is not readable and writable: ' + path)
         with open(path, 'rb') as source:
-            return base64.b64encode(source.read()).decode('ascii')
+            size = os.fstat(source.fileno()).st_size
+            if size > READ_LIMIT_BYTES:
+                raise ValueError(
+                    f'Remote file is {size} bytes; the remote read limit is {READ_LIMIT_BYTES} bytes (32 MiB). '
+                    'Use bash on the same host to read a slice with head or sed, or split the file first.')
+            data = source.read(READ_LIMIT_BYTES + 1)
+            if len(data) > READ_LIMIT_BYTES:
+                raise ValueError(
+                    f'Remote file grew past {READ_LIMIT_BYTES} bytes while reading; the remote read limit is '
+                    f'{READ_LIMIT_BYTES} bytes (32 MiB). Use bash on the same host to read a slice.')
+            return base64.b64encode(data).decode('ascii')
     if op == 'mkdir':
         os.makedirs(path, exist_ok=True)
         return None

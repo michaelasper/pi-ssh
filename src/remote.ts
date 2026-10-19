@@ -27,15 +27,21 @@ export class RemoteMutationUncertainError extends Error {
 }
 export interface ResolvedPath { path: string; canonical: string; identity?: string }
 
+// Backstop for every helper response. A 32 MiB file read returns about
+// 45 MiB of base64 JSON. Anything far past that is a runaway peer.
+export const MAX_REMOTE_RESPONSE_BYTES = 64 * 1024 * 1024;
+
 /** One-shot, structured transport. Neither file paths nor contents enter shell syntax. */
 export class RemoteClient {
   readonly host: string;
   readonly connectTimeout: number;
   readonly signal?: AbortSignal;
-  constructor(host: string, connectTimeout: number, signal?: AbortSignal) {
+  private readonly maxResponseBytes: number;
+  constructor(host: string, connectTimeout: number, signal?: AbortSignal, maxResponseBytes = MAX_REMOTE_RESPONSE_BYTES) {
     this.host = host;
     this.connectTimeout = connectTimeout;
     this.signal = signal;
+    this.maxResponseBytes = maxResponseBytes;
     validateHost(host);
     if (host === 'local') throw new Error('Remote transport cannot target local');
   }
@@ -57,6 +63,8 @@ export class RemoteClient {
         stdio: ['pipe', 'pipe', 'pipe'], detached: true, env,
       });
       const chunks: Buffer[] = [];
+      let responseBytes = 0;
+      let responseOverflow = false;
       let stderr = Buffer.alloc(0);
       let processError: Error | undefined;
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -73,7 +81,14 @@ export class RemoteClient {
         timer.unref();
       };
       this.signal?.addEventListener('abort', onAbort, { once: true });
-      child.stdout.on('data', (chunk: Buffer) => chunks.push(chunk));
+      child.stdout.on('data', (chunk: Buffer) => {
+        responseBytes += chunk.length;
+        if (responseBytes > this.maxResponseBytes) {
+          if (!responseOverflow) { responseOverflow = true; kill('SIGTERM'); timer = setTimeout(() => kill('SIGKILL'), 250); timer.unref(); }
+          return;
+        }
+        chunks.push(chunk);
+      });
       child.stderr.on('data', (chunk: Buffer) => { stderr = Buffer.concat([stderr, chunk]).subarray(-16 * 1024); });
       child.on('error', error => { processError = error; });
       child.stdin.on('error', error => { processError ??= error; });
@@ -82,6 +97,9 @@ export class RemoteClient {
         if (timer) clearTimeout(timer);
         if (this.signal?.aborted && !mutating) return reject(new Error('Operation aborted'));
         const transportError = (message: string) => mutating ? new RemoteMutationUncertainError(message) : new Error(message);
+        if (responseOverflow) {
+          return reject(transportError(`SSH ${JSON.stringify(this.host)} response exceeds the ${this.maxResponseBytes} byte limit; the transfer was stopped`));
+        }
         const diagnostic = stderr.toString('utf8').trim();
         if (code !== 0 || processError) {
           return reject(transportError(`SSH ${JSON.stringify(this.host)} failed (${code ?? 'spawn'}): ${diagnostic || processError?.message || 'connection closed'}`));
