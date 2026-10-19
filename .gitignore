@@ -1,5 +1,7 @@
 node_modules/
 .artifacts/
-.pi/
+.pi/*
+!.pi/skills/
+!.pi/skills/**
 *.tgz
 WORKLOG.md

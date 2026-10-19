@@ -1,5 +1,11 @@
 # Verification results
 
+## Throwaway sshd verification: 0.4.0
+
+The real-SSH suite no longer needs an external authorized host. `scripts/ssh-e2e.sh` starts a user-owned sshd on loopback with generated keys, runs `test/ssh.e2e.ts` against it through an isolated client config, and removes every artifact it created. The same script backs a new CI job and the project-local verification skill at `.pi/skills/verify-pi-ssh/`.
+
+Recorded run on macOS with Node.js 26.1.0. `npm run test:e2e` passed both scenarios. Bash routing took about 2.8 seconds. The file tools scenario took about 14.9 seconds and asserted its own remote cleanup. After the run, the evidence log remained at `.artifacts/ssh-e2e.log`, and no temp dir or harness sshd process remained. Limits stay honest. Loopback runs prove protocol, quoting, and routing behavior. They do not prove behavior against a different remote operating system or account.
+
 ## Pi 1.3.0 compatibility: 0.3.0
 
 Development dependencies moved from pi 0.85.1 to pi 1.3.0. Three upstream changes required source or test updates.
