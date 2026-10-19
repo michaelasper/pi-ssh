@@ -50,7 +50,10 @@ test('the real ssh client resolves the built arguments to bounded dead-peer dete
   const args = buildSshArgs('user@build', 'true', 9);
   const result = spawnSync('ssh', ['-G', ...args.slice(0, -1)], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  const effective = new Map(result.stdout.split('\n').filter(Boolean).map(line => line.split(/ (.*)/s).slice(0, 2)));
+  const effective = new Map(result.stdout.split('\n').filter(Boolean).map(line => {
+    const split = line.indexOf(' ');
+    return [line.slice(0, split), line.slice(split + 1)] as const;
+  }));
   assert.equal(effective.get('serveraliveinterval'), '15');
   assert.equal(effective.get('serveralivecountmax'), '3');
   assert.equal(effective.get('connecttimeout'), '9');

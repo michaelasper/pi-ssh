@@ -1,6 +1,8 @@
 # Verification results
 
-## Dead-peer detection: 0.7.0
+## Dead-peer detection: 0.7.1
+
+Version 0.7.0 was tagged with a typecheck error in the new `ssh -G` test, which a piped local check hid. The CI verify job failed and nothing was staged or released, so the fix shipped as 0.7.1 and the v0.7.0 tag stays unreleased by design.
 
 Every SSH invocation now carries `ServerAliveInterval=15` and `ServerAliveCountMax=3`. A peer that stops answering at the protocol level ends bash and file calls after about 45 seconds of silence instead of hanging until TCP gives up.
 
