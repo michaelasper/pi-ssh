@@ -1,5 +1,13 @@
 # Verification results
 
+## pi.dev catalog investigation: 0.8.1
+
+Question. Why does `@michaelasper/pi-ssh` not show up in the pi.dev package catalog despite public npm publication with the `pi-package` keyword?
+
+Answer, in two layers. First, the catalog could only ever show version 0.1.2, because every later version sat staged on npm without maintainer approval. Second, and worse, catalog search omits the package entirely while its detail page renders. Measured 2026-10-19: npm search reports 12,300 packages with the `pi-package` keyword. Paging that query in blocks of 250 reaches 5,249 unique names and then stops returning new ones. The catalog lists about 5,360 packages. `@michaelasper/pi-ssh` is outside the reachable window, so a crawler that enumerates this way cannot index it. Exact-name npm search finds the package, its detail page returns 200, and its metadata carries the keyword plus the `pi.extensions` manifest. Eligibility is fine. Ranking inside a capped enumeration is the failure. Upstream issue [earendil-works/pi 10145](https://github.com/earendil-works/pi/issues/10145) documents the identical symptom and mechanism for another package.
+
+Fixes applied here. Package metadata gained the standard `author` field and the `pi-extension` keyword. The release guide now records the mechanism, the staged-version list, and a three-step post-approval confirmation. The expected unlock is the maintainer approving a fresh version, which gives the package a new publish event in npm search. Until then, `pi install npm:@michaelasper/pi-ssh` and the detail page keep working. Sources: the live catalog and search endpoints above, npm registry search at https://registry.npmjs.org/-/v1/search, npm downloads at https://api.npmjs.org/downloads/point/last-month/@michaelasper/pi-ssh, and the staged publishing docs at https://docs.npmjs.com/staged-publishing/ (no expiry stated for staged packages).
+
 ## Diataxis docs cleanup: 0.8.0
 
 User docs are now exactly four files, one mode each. The tutorial teaches by doing, the how-to gives task recipes, the reference states facts, and the explanation covers boundaries and reasons. Development, releasing, and this file moved under `docs/maintainers/`. The dated 0.2.0 release page and the root `PLAN.md` were retired. Their living content already existed in the how-to migration guide and the explanation. The README shrank to a landing page that links into the four modes.

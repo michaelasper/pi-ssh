@@ -82,8 +82,18 @@ See npm’s [trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 
 ## Appear in the pi.dev package catalog
 
-The [pi.dev catalog](https://pi.dev/packages) discovers npm packages carrying the `pi-package` keyword. This project already includes it, along with `pi.extensions`, description, repository and homepage metadata. The upstream [package guide](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/packages.md#gallery-metadata) documents that discovery path; it does not specify a separate submission step or an indexing deadline.
+The catalog has two sides. Detail pages render live from the npm registry. Search and listing come from a crawler-built index. This package proves the split. Its [detail page](https://pi.dev/packages/@michaelasper/pi-ssh) works and shows the newest public npm version, while catalog search returns nothing for it.
 
-Publish and approve the public npm version, then check the [catalog search](https://pi.dev/packages?name=%40michaelasper%2Fpi-ssh). Registry search and catalog indexing may lag publication. An unpublished, private or merely staged package cannot be assumed to appear publicly.
+Measured root cause, 2026-10-19. The crawler enumerates npm packages that carry the `pi-package` keyword. npm search reports 12,300 such packages, but paging that query reaches only 5,249 unique names before results stop changing. The catalog lists about 5,360 packages, which matches that reachable window. `@michaelasper/pi-ssh` ranks below the window, so the crawler never sees it, no matter how often it re-crawls. Exact-name npm searches find the package normally. Its metadata carries the `pi-package` keyword and the `pi.extensions` manifest, so the gap is ranking, not eligibility. An upstream report documents the same mechanism: [earendil-works/pi issue 10145](https://github.com/earendil-works/pi/issues/10145).
 
-An optional `pi.image` URL can provide a PNG, JPEG, GIF or WebP preview. An optional `pi.video` URL can provide an MP4 preview and takes precedence over an image. These are not required for discovery; add a genuine, sanitised demonstration rather than a placeholder.
+The practical lever is a fresh approval. Newly published versions get a freshness boost in npm search, which is how comparable packages entered the window. Only the maintainer can approve. After approval, give the crawler some hours, then confirm all three checks:
+
+1. `npm view @michaelasper/pi-ssh version` prints the approved version.
+2. The [detail page](https://pi.dev/packages/@michaelasper/pi-ssh) shows that version and a download count instead of "not available".
+3. Catalog search for `pi-ssh` and for `michaelasper` at https://pi.dev/packages lists `@michaelasper/pi-ssh`.
+
+If the third check still fails after a day, the package remains outside the enumerable window. Installation through `pi install npm:@michaelasper/pi-ssh` keeps working either way. Record the outcome in [verification](verification.md). A catalog fix belongs upstream, in how the crawler enumerates the registry.
+
+Staged versions awaiting maintainer approval, oldest first: 0.2.0, 0.3.0, 0.4.0, 0.5.0, 0.6.0, 0.7.1, 0.8.0, and 0.8.1. The npm staged-publishing docs state no expiry for staged packages. Confirm the live list with `npm stage list @michaelasper/pi-ssh` after `npm login`. Approving only the newest version is enough for users and for the catalog. Older staged versions can stay staged or be approved in order. Version 0.7.0 has a tag but was never staged. Its CI verify job failed and it must never be published.
+
+An optional `pi.image` URL can provide a PNG, JPEG, GIF or WebP preview. An optional `pi.video` URL can provide an MP4 preview and takes precedence over an image. These are not required for discovery. Add a genuine, sanitised demonstration rather than a placeholder.

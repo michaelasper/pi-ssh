@@ -7,6 +7,7 @@ test('package retains public discovery metadata and the distributed MIT licence'
   const pkg = JSON.parse(readFileSync(new URL('package.json', root), 'utf8'));
   assert.equal(pkg.name, '@michaelasper/pi-ssh');
   assert.equal(pkg.license, 'MIT');
+  assert.equal(pkg.author, 'Michael Asper');
   assert.ok(pkg.keywords.includes('pi-package'));
   assert.equal(pkg.publishConfig.access, 'public');
   assert.ok(pkg.files.includes('LICENSE'));
