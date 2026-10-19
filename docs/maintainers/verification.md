@@ -1,5 +1,13 @@
 # Verification results
 
+## Release 1.0.0
+
+Version 1.0.0 closes the run that started at the unreleased 0.2.0. Since then, each change shipped as its own verified release: pi 1.3.0 support (0.3.0), throwaway-sshd verification in CI (0.4.0), target visibility (0.5.0), bounded remote payloads (0.6.0), dead-peer detection (0.7.1), the Diataxis docs rework (0.8.0), and catalog metadata (0.8.1). This version changes no tool behavior over 0.8.1. It marks the line where all of that is the stable baseline.
+
+Final local evidence on macOS with Node.js 26.1.0 and pi 1.3.0. `npm run check` passed 57 tests with strict TypeScript, run unpiped after the 0.7.0 lesson. `npm run test:docs` checked 41 relative links, zero broken. `npm run test:package` passed the isolated pi 1.3.0 install with zero production dependencies. `npm run test:e2e` passed both real-SSH scenarios through the loopback sshd. Both npm audits reported zero vulnerabilities. Hosted CI on the release commit runs the six-job matrix plus the `ssh-e2e` job. Their results ride with the tag and the GitHub release.
+
+npm state at release time. Staged versions awaiting maintainer approval with 2FA, oldest first: 0.2.0, 0.3.0, 0.4.0, 0.5.0, 0.6.0, 0.7.1, 0.8.0, 0.8.1, 1.0.0. Only versions the maintainer approves become public. Approving 1.0.0 alone is sufficient for users. Version 0.7.0 was never staged and must never be published. Until an approval lands, `npm view @michaelasper/pi-ssh` keeps showing 0.1.2 and the pi.dev catalog keeps its current listing state.
+
 ## pi.dev catalog investigation: 0.8.1
 
 Question. Why does `@michaelasper/pi-ssh` not show up in the pi.dev package catalog despite public npm publication with the `pi-package` keyword?
