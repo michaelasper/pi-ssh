@@ -19,7 +19,7 @@ export function fileFixture() {
 import json, os, sys, time, subprocess
 args = sys.argv[1:]
 assert args[:5] == ['-T', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes']
-assert args[5:8] == ['-o', 'ConnectTimeout=10', '--']
+assert args[5:12] == ['-o', 'ConnectTimeout=10', '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=3', '--']
 host, command = args[-2:]
 if host == 'missing-python':
     os.environ['PATH'] = os.path.join(os.environ['PI_SSH_FAKE_ROOT'], 'only-bash')

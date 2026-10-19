@@ -1,5 +1,11 @@
 # Verification results
 
+## Dead-peer detection: 0.7.0
+
+Every SSH invocation now carries `ServerAliveInterval=15` and `ServerAliveCountMax=3`. A peer that stops answering at the protocol level ends bash and file calls after about 45 seconds of silence instead of hanging until TCP gives up.
+
+Evidence. `npm run check` passed 57 tests. The exact-argv test pins both options, and a new test runs the real `ssh -G` against the built arguments to confirm the effective client configuration resolves to 15, 3, the configured connect timeout, and batch mode. `npm run test:e2e` passed both real-SSH scenarios through the loopback sshd, which confirms live peers are unaffected. A true dead-peer run, with a server that halts mid-session, is not in the suite. The option values are OpenSSH's documented mechanism for exactly that case.
+
 ## Bounded remote payloads: 0.6.0
 
 Remote reads now refuse files over 33,554,432 bytes with an error that names the size and the limit. The guard covers read, the read inside edit, and the context load inside grep. Grep without context still searches such files. The local transport also stops any helper response over 67,108,864 bytes.

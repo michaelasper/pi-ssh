@@ -165,8 +165,10 @@ Configuration is read after CLI flags become available, on `session_start`, and 
 Bash reuses the native process backend, replacing the local Bash process with `ssh` through `exec`. File transport starts SSH directly with an argument array. Both routes reuse host validation, connection timeout and these options:
 
 ```text
--T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=<seconds> -- <host> <remote-script>
+-T -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=<seconds> -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -- <host> <remote-script>
 ```
+
+The server-alive options end a call after about 45 seconds of protocol silence from the peer. A live peer running a long command is unaffected. These command-line values take precedence over `ServerAliveInterval` and `ServerAliveCountMax` in `~/.ssh/config` for pi-ssh calls only.
 
 Authentication is non-interactive. Bash commands receive no interactive stdin; file helpers receive one JSON request over stdin. Both shell boundaries are quoted. For bash, a failed configured `cd` exits before the user command runs. File requests carry paths, search patterns and contents separately from shell syntax.
 
