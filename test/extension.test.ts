@@ -16,6 +16,7 @@ test('registers seven host-aware tools and three flags; resolves defaults after 
   const api = {
     registerTool: (value: typeof tool) => { tool = value; names.push(value.name); assert.ok(value.parameters.properties.host); },
     registerFlag: (name: string) => { flags.push(name); },
+    registerCommand: () => {},
     getFlag: (name: string) => { assert.ok(ready); return name === 'ssh-host' ? 'build' : undefined; },
     on: (name: string, handler: Function) => { events.set(name, handler); },
   } as unknown as ExtensionAPI;
@@ -42,7 +43,7 @@ test('bad configuration remains blocked across startup and reports a useful mode
   const registered: Array<{ execute: (...args: any[]) => Promise<any> }> = [];
   let tool!: ReturnType<typeof createSshBashTool>;
   extension({
-    registerTool: (value: typeof tool) => { tool = value; registered.push(value); }, registerFlag: () => {},
+    registerTool: (value: typeof tool) => { tool = value; registered.push(value); }, registerFlag: () => {}, registerCommand: () => {},
     getFlag: (name: string) => name === 'ssh-host' ? '-bad' : undefined,
     on: (name: string, handler: Function) => events.set(name, handler),
   } as unknown as ExtensionAPI);
@@ -70,7 +71,7 @@ test('local shell settings honour project trust; prefix and custom shell never a
     process.env.PATH = `${root}:${previousPath}`;
     const events = new Map<string, Function>();
     let tool!: ReturnType<typeof createSshBashTool>;
-    extension({ registerTool: (value: typeof tool) => { tool = value; }, registerFlag: () => {}, getFlag: () => undefined,
+    extension({ registerTool: (value: typeof tool) => { tool = value; }, registerFlag: () => {}, registerCommand: () => {}, getFlag: () => undefined,
       on: (name: string, handler: Function) => events.set(name, handler) } as unknown as ExtensionAPI);
     let trusted = false;
     const ctx = { cwd: root, isProjectTrusted: () => trusted,
@@ -91,4 +92,41 @@ test('local shell settings honour project trust; prefix and custom shell never a
     process.env.PATH = previousPath;
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('/ssh reports the resolved target and the footer status tracks the default host', async () => {
+  const events = new Map<string, Function>();
+  const statuses: Array<[string, string | undefined]> = [];
+  const notices: Array<[string, string | undefined]> = [];
+  let command!: { handler: (args: string, ctx: any) => Promise<void> };
+  let host: string | undefined = 'build';
+  extension({
+    registerTool: () => {}, registerFlag: () => {},
+    registerCommand: (name: string, options: typeof command) => { assert.equal(name, 'ssh'); command = options; },
+    getFlag: (name: string) => name === 'ssh-host' ? host : name === 'ssh-cwd' ? '/srv/project' : undefined,
+    on: (name: string, handler: Function) => events.set(name, handler),
+  } as unknown as ExtensionAPI);
+  const ctx = { cwd: tmpdir(), isProjectTrusted: () => false,
+    ui: { setStatus: (key: string, value: string | undefined) => statuses.push([key, value]),
+      notify: (message: string, type?: string) => notices.push([message, type]) } };
+  await events.get('session_start')!({}, ctx);
+  assert.deepEqual(statuses, [['pi-ssh', 'ssh: build (/srv/project)']]);
+  await command.handler('', ctx);
+  assert.equal(notices.length, 1);
+  assert.equal(notices[0][1], 'info');
+  assert.match(notices[0][0], /Default host: "build"/);
+  assert.match(notices[0][0], /Remote cwd: "\/srv\/project"/);
+  assert.match(notices[0][0], /Connection timeout: 10s/);
+  assert.match(notices[0][0], /host="local"/);
+  host = undefined;
+  await events.get('session_start')!({}, ctx);
+  assert.deepEqual(statuses.at(-1), ['pi-ssh', undefined]);
+  await command.handler('', ctx);
+  assert.match(notices.at(-1)![0], /Default host: local/);
+  host = '-bad';
+  await events.get('session_start')!({}, ctx);
+  assert.deepEqual(statuses.at(-1), ['pi-ssh', 'ssh: config error']);
+  await command.handler('', ctx);
+  assert.equal(notices.at(-1)![1], 'error');
+  assert.match(notices.at(-1)![0], /Invalid SSH host/);
 });

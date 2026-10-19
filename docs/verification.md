@@ -1,5 +1,11 @@
 # Verification results
 
+## Target visibility: 0.5.0
+
+The session now shows its SSH target before any tool runs. A `/ssh` command reports the default host, remote cwd, and connection timeout. The footer shows `ssh: <host>` under a remote default and `ssh: config error` for invalid configuration. Local defaults show nothing.
+
+Evidence. `npm run check` passed 54 tests, including a new extension test that drives remote, local, and broken configurations and asserts the exact status values and notice text. A real pi 1.3.0 launch with a probe extension listed `ssh` among the registered commands. `npm run test:e2e` passed both real-SSH scenarios. `npm run test:package` passed under pi 1.3.0.
+
 ## Throwaway sshd verification: 0.4.0
 
 The real-SSH suite no longer needs an external authorized host. `scripts/ssh-e2e.sh` starts a user-owned sshd on loopback with generated keys, runs `test/ssh.e2e.ts` against it through an isolated client config, and removes every artifact it created. The same script backs a new CI job and the project-local verification skill at `.pi/skills/verify-pi-ssh/`.

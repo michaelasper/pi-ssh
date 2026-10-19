@@ -182,6 +182,8 @@ Non-zero exits are tool errors containing output and an exit-code notice. SSH ty
 
 ## Tool presentation
 
+The `/ssh` command reports the resolved default host, remote cwd and connection timeout. The footer status shows `ssh: <host>`, plus the configured remote cwd in parentheses when set, whenever the default host is remote. It shows `ssh: config error` when configuration is invalid, and nothing when the default is local.
+
 Each tool header includes a presentation-only target and, for remote calls, directory annotation. It does not alter the command, path, contents or result details. Omitted configuration is marked “current default”: on a restored transcript it reflects currently loaded configuration, not a durable record of the historical target. Explicit per-call `host` and bash `cwd` remain in recorded arguments.
 
 Native result rendering is preserved. Native edit’s pre-execution local preview is disabled for remote calls so rendering cannot read a similarly named local file. The completed remote edit still shows the actual result diff.

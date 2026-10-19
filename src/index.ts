@@ -1,5 +1,5 @@
 import { type ExtensionAPI, type ToolDefinition, getAgentDir, SettingsManager } from '@earendil-works/pi-coding-agent';
-import { type Config, resolveConfig } from './config.ts';
+import { type Config, describeConfig, resolveConfig, statusText } from './config.ts';
 import { createSshBashTool } from './tool.ts';
 import { createSshFileTools } from './file-tools.ts';
 
@@ -15,6 +15,14 @@ export default function sshExtension(pi: ExtensionAPI) {
   };
   for (const tool of Object.values(createSshFileTools(getConfig))) pi.registerTool(tool as ToolDefinition<any, any, any>);
   pi.registerTool(createSshBashTool(getConfig));
+
+  pi.registerCommand('ssh', {
+    description: 'Show the pi-ssh default target, remote cwd and connection timeout',
+    handler: async (_args, ctx) => {
+      if (config instanceof Error) ctx.ui.notify(`pi-ssh configuration error: ${config.message}`, 'error');
+      else ctx.ui.notify(describeConfig(config), 'info');
+    },
+  });
 
   // Extension CLI flags are only available after the factory has returned.
   pi.on('session_start', (_event, ctx) => {
@@ -32,6 +40,7 @@ export default function sshExtension(pi: ExtensionAPI) {
     } catch (error) {
       config = error instanceof Error ? error : new Error(String(error));
     }
+    if (ctx.ui) ctx.ui.setStatus('pi-ssh', config instanceof Error ? 'ssh: config error' : statusText(config));
   });
 
   pi.on('before_agent_start', event => ({

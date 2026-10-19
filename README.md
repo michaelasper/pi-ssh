@@ -112,6 +112,8 @@ File tools add **only `host`**, not per-call `cwd`. Use their existing `path` ar
 
 Headers show the target and remote directory. Omitted configuration is labelled “current default”; restored transcripts do not provide a durable historical target for omitted fields.
 
+Run `/ssh` at any time to see the resolved default host, remote cwd and connection timeout. When the default host is remote, the footer also shows `ssh: <host>` for the whole session. A broken configuration shows `ssh: config error` there instead.
+
 ## Configuration
 
 | CLI flag | Environment variable | Default |

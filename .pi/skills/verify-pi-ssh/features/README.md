@@ -38,3 +38,4 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 - [File tools routing](./file-tools-routing.md) covers read, write, edit, find, grep, and ls on the remote filesystem.
 - [Local override](./local-override.md) covers `host="local"` under a remote default and the local full-output artifact rule.
 - [Remote working directory](./remote-cwd.md) covers per-call and configured remote cwd, plus home-relative paths.
+- [Target visibility](./target-visibility.md) covers the `/ssh` command and the footer status. The unit suite and a real pi launch carry this proof, not the sshd harness.

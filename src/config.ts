@@ -47,6 +47,18 @@ export function resolveConfig(
   return { host, ...(rawCwd === undefined ? {} : { cwd: validateCwd(rawCwd) }), connectTimeout };
 }
 
+export function describeConfig(config: Config): string {
+  if (config.host === 'local') {
+    return `pi-ssh\nDefault host: local\nConnection timeout: ${config.connectTimeout}s\nCalls without host run locally. Name an SSH host per call to run remotely.`;
+  }
+  return `pi-ssh\nDefault host: ${JSON.stringify(config.host)}\nRemote cwd: ${config.cwd === undefined ? 'remote login directory' : JSON.stringify(config.cwd)}\nConnection timeout: ${config.connectTimeout}s\nCalls without host run on this host, including file writes. Use host="local" for the local machine.`;
+}
+
+export function statusText(config: Config): string | undefined {
+  if (config.host === 'local') return undefined;
+  return `ssh: ${config.host}${config.cwd === undefined ? '' : ` (${config.cwd})`}`;
+}
+
 export function resolveTarget(input: TargetInput, config: Config): TargetInput & { host: string } {
   const host = validateHost(input.host ?? config.host);
   if (host === 'local') {
