@@ -33,7 +33,7 @@ function requireAbsolute(searchPath: string): void {
 	}
 }
 
-/** Mirrors pi 0.85.1's default fd backend, rather than its custom-glob variant. */
+/** Mirrors pi 1.3.0's default fd backend, rather than its custom-glob variant. */
 export async function remoteFind(
 	input: FindToolInput,
 	searchPath: string,
@@ -106,7 +106,7 @@ function grepResponse(value: any): GrepResponse {
 }
 
 /**
- * Mirrors pi 0.85.1's rg JSON match collection and formatting. Context is deliberately
+ * Mirrors pi 1.3.0's rg JSON match collection and formatting. Context is deliberately
  * read in the same remote request: a dropped SSH connection must reject the whole
  * operation, not become the native '(unable to read file)' OS-error fallback.
  */
@@ -178,7 +178,7 @@ export async function remoteGrep(
 		details.truncation = truncation;
 	}
 	if (linesTruncated) {
-		// truncateLine's public default is 500 UTF-16 code units in pi 0.85.1.
+		// truncateLine's public default is 500 UTF-16 code units in pi 1.3.0.
 		notices.push("Some lines truncated to 500 chars. Use read tool to see full lines");
 		details.linesTruncated = true;
 	}

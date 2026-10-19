@@ -12,7 +12,7 @@ This reference describes the host-aware file-tool implementation in version 0.2.
 
 ## Compatibility
 
-The compatibility reference is `@earendil-works/pi-coding-agent` **0.85.1**. The extension uses public tool-definition factories, operation interfaces and truncation helpers, without pi-core changes or private imports. Local file calls delegate to all six native implementations. Remote `read`, `write`, `edit` and `ls` reuse native algorithms through operation adapters; remote `find` and `grep` match the native fd/rg behaviour with dedicated adapters and public truncation helpers. The native grep API has no spawn hook.
+The compatibility reference is `@earendil-works/pi-coding-agent` **1.3.0**. The extension uses public tool-definition factories, operation interfaces and truncation helpers, without pi-core changes or private imports. Local file calls delegate to all six native implementations. Remote `read`, `write`, `edit` and `ls` reuse native algorithms through operation adapters; remote `find` and `grep` match the native fd/rg behaviour with dedicated adapters and public truncation helpers. The native grep API has no spawn hook.
 
 Peer dependencies use `*` as required by pi package conventions, not as a claim that every pi version works. They are optional peers because pi supplies them at runtime. The extension has no additional production npm dependencies. Exact development versions and the lockfile make contributor installs reproducible.
 
@@ -119,7 +119,7 @@ Native path conveniences are handled target-aware: leading `@`, supported Unicod
 
 ### Output limits and memory
 
-Limits follow native pi 0.85.1 behaviour:
+Limits follow native pi 1.3.0 behaviour:
 
 | Tool | Output contract |
 | --- | --- |

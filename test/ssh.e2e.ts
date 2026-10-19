@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { readFileSync, rmSync, mkdtempSync, writeFileSync, existsSync } from 'node:fs';
 import { join, posix } from 'node:path';
 import { tmpdir } from 'node:os';
-import type { ExtensionContext } from '@earendil-works/pi-coding-agent';
+import type { ExtensionToolContext } from '@earendil-works/pi-coding-agent';
 import { createSshBashTool } from '../src/tool.ts';
 import { resolveConfig } from '../src/config.ts';
 import { quote } from '../src/ssh.ts';
@@ -14,7 +14,7 @@ import { tinyPng } from './images.ts';
 const host = process.env.PI_SSH_TEST_HOST;
 if (!host) throw new Error('Set PI_SSH_TEST_HOST to an authorized SSH target; this test is intentionally opt-in');
 const tool = createSshBashTool(() => resolveConfig({ host }, {}));
-const ctx = { cwd: tmpdir(), sessionManager: { getSessionId: () => 'ssh-e2e', getSessionFile: () => undefined } } as unknown as ExtensionContext;
+const ctx = { cwd: tmpdir(), sessionManager: { getSessionId: () => 'ssh-e2e', getSessionFile: () => undefined } } as unknown as ExtensionToolContext;
 const run = (command: string, extras: { host?: string; cwd?: string; timeout?: number } = {}, signal?: AbortSignal) =>
   tool.execute('e2e', { command, timeout: 15, ...extras }, signal, undefined, ctx);
 const text = (result: Awaited<ReturnType<typeof run>>) => result.content.map(c => c.type === 'text' ? c.text : '').join('');
@@ -30,9 +30,13 @@ test('real SSH: success, cwd, quoting, failures, output limits, timeout and canc
     await run(`mkdir -- ${quote(cwd)}`);
     assert.equal(text(await run('pwd', { cwd })).trim(), cwd);
     assert.equal(text(await run(`printf '%s' ${quote("literal $HOME `id` 'quotes'\nλ")}`, { cwd })), "literal $HOME `id` 'quotes'\nλ");
-    await assert.rejects(run('printf error >&2; exit 17'), /error[\s\S]*code 17/);
-    await assert.rejects(run('printf SHOULD_NOT_RUN; true', { cwd: `${root}/missing` }), error =>
-      error instanceof Error && /code 1/.test(error.message) && !error.message.includes('SHOULD_NOT_RUN'));
+    const failed = await run('printf error >&2; exit 17');
+    assert.equal(failed.isError, true);
+    assert.match(text(failed), /error[\s\S]*code 17/);
+    const blocked = await run('printf SHOULD_NOT_RUN; true', { cwd: `${root}/missing` });
+    assert.equal(blocked.isError, true);
+    assert.match(text(blocked), /code 1/);
+    assert.ok(!text(blocked).includes('SHOULD_NOT_RUN'));
     const large = await run("printf '%060000d' 0");
     assert.ok(large.details?.truncation?.truncated);
     assert.equal(readFileSync(large.details!.fullOutputPath!, 'utf8').length, 60000);

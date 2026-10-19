@@ -1,11 +1,11 @@
 import { performance } from 'node:perf_hooks';
 import { tmpdir } from 'node:os';
-import { createBashToolDefinition, type ExtensionContext } from '@earendil-works/pi-coding-agent';
+import { createBashToolDefinition, type ExtensionToolContext } from '@earendil-works/pi-coding-agent';
 import { createSshBashTool } from '../src/tool.ts';
 import { resolveConfig } from '../src/config.ts';
 import { buildSshCommand } from '../src/ssh.ts';
 
-const ctx = { cwd: tmpdir(), sessionManager: { getSessionId: () => 'bench', getSessionFile: () => undefined } } as unknown as ExtensionContext;
+const ctx = { cwd: tmpdir(), sessionManager: { getSessionId: () => 'bench', getSessionFile: () => undefined } } as unknown as ExtensionToolContext;
 const builtin = createBashToolDefinition(ctx.cwd);
 const config = resolveConfig({}, {});
 const wrapper = createSshBashTool(() => config);

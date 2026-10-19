@@ -27,6 +27,8 @@ test('all six schemas add only optional host and local routes delegate to native
       assert.equal(host.type, 'string');
       assert.deepEqual(properties, natives[name].parameters.properties);
       assert.deepEqual(tools[name].parameters.required, natives[name].parameters.required);
+      assert.deepEqual(tools[name].outputSchema, natives[name].outputSchema);
+      assert.deepEqual(tools[name].constrainedSampling, natives[name].constrainedSampling);
       assert.ok(!('cwd' in properties));
     }
     writeFileSync(join(f.ctx.cwd, 'source.txt'), 'one\ntwo\nthree\n');

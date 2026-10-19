@@ -1,6 +1,6 @@
 /*
- * Adapted from @earendil-works/pi-coding-agent v0.85.1, src/utils/mime.ts:
- * https://github.com/earendil-works/pi/blob/v0.85.1/packages/coding-agent/src/utils/mime.ts
+ * Adapted from @earendil-works/pi-coding-agent v1.3.0, src/utils/mime.ts:
+ * https://github.com/earendil-works/pi/blob/v1.3.0/packages/coding-agent/src/utils/mime.ts
  * MIT License — Copyright (c) 2025 Mario Zechner
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ export function detectImageMimeType(buffer: Buffer): string | null {
     return buffer.length >= 16 && buffer.readUInt32BE(8) === 13 && hasAscii(buffer, 12, 'IHDR')
       && !isAnimatedPng(buffer) ? 'image/png' : null;
   }
-  if (hasAscii(buffer, 0, 'GIF')) return 'image/gif';
+  if (hasAscii(buffer, 0, 'GIF87a') || hasAscii(buffer, 0, 'GIF89a')) return 'image/gif';
   if (hasAscii(buffer, 0, 'RIFF') && hasAscii(buffer, 8, 'WEBP')) return 'image/webp';
   if (hasAscii(buffer, 0, 'BM') && isBmp(buffer)) return 'image/bmp';
   return null;

@@ -4,7 +4,7 @@ This tutorial runs a harmless command and reads an existing file remotely, then 
 
 You need:
 
-- pi 0.85.1, Node.js 22.19+, and local Bash/OpenSSH on macOS or Linux.
+- pi 1.3.0, Node.js 22.19+, and local Bash/OpenSSH on macOS or Linux.
 - A version 0.2.0 checkout, with no other pi-ssh installation active. Versions `0.1.x` are bash-only and cannot run the file-tool step.
 - An SSH alias named `build` for a Linux machine you are authorised to use, with `/etc/os-release`, Bash, a POSIX-compatible login shell and Python 3.9+ on `PATH`.
 

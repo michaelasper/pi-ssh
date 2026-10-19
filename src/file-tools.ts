@@ -4,7 +4,7 @@ import { join, posix } from 'node:path';
 import {
   createReadToolDefinition, createWriteToolDefinition, createEditToolDefinition,
   createFindToolDefinition, createGrepToolDefinition, createLsToolDefinition,
-  type ExtensionContext, type ToolDefinition, type ReadToolInput, type WriteToolInput,
+  type ExtensionToolContext, type ToolDefinition, type ReadToolInput, type WriteToolInput,
   type EditToolInput, type LsToolInput, type ReadToolOptions,
 } from '@earendil-works/pi-coding-agent';
 import { Text, Container } from '@earendil-works/pi-tui';
@@ -23,7 +23,7 @@ interface RemoteContext {
   client: RemoteClient;
   resolved: ResolvedPath;
   signal?: AbortSignal;
-  ctx: ExtensionContext;
+  ctx: ExtensionToolContext;
 }
 
 function withHost<T extends TSchema & { properties: TProperties }, D, S>(
@@ -71,7 +71,7 @@ function withHost<T extends TSchema & { properties: TProperties }, D, S>(
       return component;
     },
     async execute(id: string, input: Static<typeof parameters>, signal: Parameters<typeof native.execute>[2],
-      onUpdate: Parameters<typeof native.execute>[3], ctx: ExtensionContext) {
+      onUpdate: Parameters<typeof native.execute>[3], ctx: ExtensionToolContext) {
       const config = getConfig();
       const target = resolveTarget({ host: (input as { host?: string }).host }, config);
       if (Object.hasOwn(input, 'cwd')) throw new Error(`${native.name} has no per-call cwd; use path and the configured remote cwd`);
@@ -95,7 +95,7 @@ function withHost<T extends TSchema & { properties: TProperties }, D, S>(
 // Use an opaque, nonexistent per-call path for the in-memory native algorithms.
 // No remote file is mirrored and no local user path/home participates in execution.
 function memoryPath() { return join(tmpdir(), `pi-ssh-memory-${randomUUID()}`, 'file'); }
-function memoryContext(remote: RemoteContext): ExtensionContext { return { ...remote.ctx, cwd: '/', model: remote.ctx.model }; }
+function memoryContext(remote: RemoteContext): ExtensionToolContext { return { ...remote.ctx, cwd: '/', model: remote.ctx.model }; }
 
 async function readRemote(input: ReadToolInput, remote: RemoteContext, options?: Pick<ReadToolOptions, 'autoResizeImages'>) {
   const buffer = Buffer.from(await remote.client.call<string>({ op: 'read', path: remote.resolved.path }), 'base64');

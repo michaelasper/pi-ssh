@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ExtensionAPI, ExtensionContext } from '@earendil-works/pi-coding-agent';
+import type { ExtensionAPI, ExtensionToolContext } from '@earendil-works/pi-coding-agent';
 import extension from '../src/index.ts';
 import type { createSshBashTool } from '../src/tool.ts';
 
@@ -24,7 +24,7 @@ test('registers seven host-aware tools and three flags; resolves defaults after 
   assert.deepEqual(names, ['read', 'write', 'edit', 'find', 'grep', 'ls', 'bash']);
   assert.deepEqual(flags, ['ssh-host', 'ssh-cwd', 'ssh-connect-timeout']);
   assert.deepEqual([...events.keys()], ['session_start', 'before_agent_start']);
-  await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionContext), /not initialized/);
+  await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionToolContext), /not initialized/);
   ready = true;
   await events.get('session_start')!({}, { cwd: tmpdir(), isProjectTrusted: () => false });
   const prompt = await events.get('before_agent_start')!({ systemPrompt: 'Original prompt.' }, {});
@@ -47,7 +47,7 @@ test('bad configuration remains blocked across startup and reports a useful mode
     on: (name: string, handler: Function) => events.set(name, handler),
   } as unknown as ExtensionAPI);
   await events.get('session_start')!({}, {});
-  await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionContext), /Invalid SSH host/);
+  await assert.rejects(tool.execute('test', { command: 'true' }, undefined, undefined, {} as ExtensionToolContext), /Invalid SSH host/);
   for (const fileTool of registered) await assert.rejects(fileTool.execute('blocked', { host: 'local', path: 'never' }, undefined, undefined, {}), /Invalid SSH host/);
   const prompt = await events.get('before_agent_start')!({ systemPrompt: '' }, {});
   assert.match(prompt.systemPrompt, /blocked/i);
@@ -74,7 +74,7 @@ test('local shell settings honour project trust; prefix and custom shell never a
       on: (name: string, handler: Function) => events.set(name, handler) } as unknown as ExtensionAPI);
     let trusted = false;
     const ctx = { cwd: root, isProjectTrusted: () => trusted,
-      sessionManager: { getSessionId: () => 'test', getSessionFile: () => undefined } } as unknown as ExtensionContext;
+      sessionManager: { getSessionId: () => 'test', getSessionFile: () => undefined } } as unknown as ExtensionToolContext;
     const run = async (host: string) => {
       const result = await tool.execute('test', { command: 'printf "%s:%s" "${PI_SSH_PREFIX_TEST-unset}" "${PI_SSH_SHELL_TEST-unset}"', host }, undefined, undefined, ctx);
       return result.content.map(c => c.type === 'text' ? c.text : '').join('');

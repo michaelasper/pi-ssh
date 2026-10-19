@@ -12,7 +12,7 @@ File tools add only `host` because their native `path` argument already selects 
 
 ## Reuse native behaviour where the public API permits
 
-The compatibility reference is pi 0.85.1’s public APIs. All six local file calls delegate to native pi. Remote read, write, edit and ls retain the native algorithms through operation adapters, preserving pagination, image handling, edit validation, diffs and result details.
+The compatibility reference is pi 1.3.0’s public APIs. All six local file calls delegate to native pi. Remote read, write, edit and ls retain the native algorithms through operation adapters, preserving pagination, image handling, edit validation, diffs and result details.
 
 Native path resolution and mutation machinery can touch the local filesystem even when operations are replaced. Remote adapters therefore resolve paths on the remote and run native algorithms with opaque in-memory placeholders, not similarly named local user files. No file is mirrored into the local checkout. Native edit’s local pre-execution preview is disabled for remote calls to prevent a presentation step from reading a local file; the completed result still renders the actual remote diff.
 

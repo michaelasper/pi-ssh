@@ -34,7 +34,7 @@ There is no file synchronisation, persistent remote service or remote pi install
 
 ## Requirements
 
-- **Local:** [pi](https://github.com/earendil-works/pi) 0.85.1, Node.js 22.19+, Bash and OpenSSH. macOS and Linux are supported; Windows is not verified.
+- **Local:** [pi](https://github.com/earendil-works/pi) 1.3.0, Node.js 22.19+, Bash and OpenSSH. macOS and Linux are supported; Windows is not verified.
 - **Remote bash:** Bash on `PATH`, a POSIX-compatible login shell and non-interactive SSH authentication.
 - **Remote file tools:** Python 3.9+ on `PATH`; `find` also needs `fd` or `fdfind`, and `grep` needs ripgrep (`rg`). No remote Node.js or pi is required.
 

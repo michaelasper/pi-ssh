@@ -83,8 +83,10 @@ test('supported image signatures are detected independently of filename extensio
     await check(`text mislabeled as ${extension}`, Buffer.from('not an image'), null, extension);
   }
   await check('JPEG signature alone is sufficient', JPEG_HEADER.subarray(0, 3), 'image/jpeg');
-  await check('GIF signature alone is sufficient', Buffer.from('GIF'), 'image/gif');
-  await check('GIF version is not validated', Buffer.from('GIFxxx'), 'image/gif');
+  await check('GIF text prefix alone is not sufficient', Buffer.from('GIF'), null);
+  await check('GIF87a signature is sufficient', Buffer.from('GIF87a'), 'image/gif');
+  await check('GIF89a signature is sufficient', Buffer.from('GIF89a'), 'image/gif');
+  await check('Unknown GIF version is rejected', Buffer.from('GIFxxx'), null);
   await check('PNG IHDR body need not be present', PNG_HEADER.subarray(0, 16), 'image/png');
   await check('WebP RIFF size and payload are not validated', Buffer.from('RIFFxxxxWEBP'), 'image/webp');
 });

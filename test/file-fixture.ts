@@ -1,7 +1,7 @@
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, realpathSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ExtensionContext } from '@earendil-works/pi-coding-agent';
+import type { ExtensionToolContext } from '@earendil-works/pi-coding-agent';
 
 export function fileFixture() {
   const root = realpathSync(mkdtempSync(join(tmpdir(), 'pi-ssh-files-')));
@@ -53,7 +53,7 @@ os.execv('/bin/sh', ['sh', '-c', command])
   process.env.PI_SSH_FAKE_ROOT = root;
   const ctx = { cwd: join(root, 'local', 'work'),
     sessionManager: { getSessionId: () => 'file-tests', getSessionFile: () => undefined },
-  } as unknown as ExtensionContext;
+  } as unknown as ExtensionToolContext;
   return { root, ctx, cleanup() {
     process.env.PATH = oldPath;
     if (oldRoot === undefined) delete process.env.PI_SSH_FAKE_ROOT;

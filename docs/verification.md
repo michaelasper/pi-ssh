@@ -1,5 +1,24 @@
 # Verification results
 
+## Pi 1.3.0 compatibility: 0.3.0
+
+Development dependencies moved from pi 0.85.1 to pi 1.3.0. Three upstream changes required source or test updates.
+
+- Tool `execute` now receives `ExtensionToolContext`, which adds `tools` and `executeTool`. The extension and its test fixtures use the new type. Spreading the live context preserves both fields for the in-memory native algorithms.
+- Bash failures now resolve instead of throwing. A command that exits non-zero returns `isError: true` with `structuredContent.exit_code`. Timeouts, aborts, and invalid arguments still throw. Tests assert the resolved shape for local, remote, bad-cwd, and transport failures, including literal exit codes 7 and 23.
+- The image detector now requires a full `GIF87a` or `GIF89a` signature. Text that starts with `GIF` no longer counts as an image. The mirrored detector in `src/image-mime.ts` matches, and the differential tests cover both signatures and the rejected prefix.
+
+Recorded commands on macOS with Node.js 26.1.0 and pi 1.3.0 on `PATH`:
+
+| Command | Outcome |
+| --- | --- |
+| `npm run check` | All 53 tests passed, including the differential find, grep, and image suites against the 1.3.0 natives. Strict TypeScript passed. |
+| `npm run test:package` | The 21-file production tarball passed isolated pi 1.3.0 installation. All seven host-aware schemas registered. Zero installed production dependencies and zero audit findings. |
+| `npm run bench` | Local median 1.733 ms built-in against 1.739 ms through the wrapper over 100 samples. SSH command construction averaged 0.78 microseconds. |
+| `npm audit --audit-level=low` | Zero vulnerabilities. |
+
+Schema tests also assert that every wrapped tool keeps the native `outputSchema` and `constrainedSampling`. Codemode scripts reach these tools through the same definitions, so they keep the structured results pi 1.3.0 provides. No real-SSH run is recorded for 0.3.0. The opt-in suite assertions were updated for the new bash failure shape, and the run itself moves to throwaway sshd coverage in the next release.
+
 ## Release preparation: 0.2.0
 
 After updating version metadata and release documentation:

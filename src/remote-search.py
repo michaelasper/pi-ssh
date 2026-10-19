@@ -103,7 +103,7 @@ def nul_records(stream):
 def find_args(request):
     search_path = request["path"]
     args = ["--glob", "--color=never", "--hidden", "--print0"]
-    # Match pi 0.85.1: --no-require-git only outside a repository, so parent
+    # Match pi 1.3.0: --no-require-git only outside a repository, so parent
     # ignore rules stop at nested repo boundaries. .git may be a file/worktree.
     current = search_path
     while not os.path.exists(os.path.join(current, ".git")):
