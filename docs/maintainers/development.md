@@ -28,13 +28,19 @@ For changes, add a failing behavioural test first, run it, implement the smalles
 
 ## Check a real SSH server
 
-Choose a machine you are authorised to test. It needs Bash, a POSIX-compatible login shell, Python 3.9+ on `PATH`, fd/fdfind and rg in the [supported lookup locations](reference.md#compatibility). Confirm key authentication and the host fingerprint outside pi. Missing prerequisites are blockers to resolve explicitly, not permission to install software or change SSH security settings automatically:
+Run the suite against a throwaway server on loopback first. The harness in `scripts/ssh-e2e.sh` generates keys, starts a user-owned sshd, runs the suite, and removes everything it created. It never touches the real `~/.ssh` directory. The [verification skill](../../.pi/skills/verify-pi-ssh/SKILL.md) describes the full workflow and the feature map:
+
+```bash
+npm run test:e2e
+```
+
+To check a machine you are authorised to test instead, give the suite that host directly. It needs Bash, a POSIX-compatible login shell, Python 3.9+ on `PATH`, fd/fdfind and rg in the [supported lookup locations](../reference.md#compatibility). Confirm key authentication and the host fingerprint outside pi. Missing prerequisites are blockers to resolve explicitly, not permission to install software or change SSH security settings automatically:
 
 ```bash
 PI_SSH_TEST_HOST=developer@build npm run test:ssh
 ```
 
-`PI_SSH_TEST_HOST` is mandatory; the test is intentionally opt-in. It uses normal SSH configuration with batch authentication, strict host-key checking and the configured connection timeout. Fixtures use isolated remote `/tmp/pi-ssh-e2e.*` and `/tmp/pi-ssh-files.*` directories plus a separate local temporary directory. Cleanup runs in `finally` and checks removal of the remote fixtures.
+`PI_SSH_TEST_HOST` is mandatory for `test:ssh`; the external-host run stays intentionally opt-in. It uses normal SSH configuration with batch authentication, strict host-key checking and the configured connection timeout. Fixtures use isolated remote `/tmp/pi-ssh-e2e.*` and `/tmp/pi-ssh-files.*` directories plus a separate local temporary directory. Cleanup runs in `finally` and checks removal of the remote fixtures.
 
 The bash scenario exercises quoting, directory selection, errors, routing, output truncation, timeout and cancellation. The file-tool scenario exercises all six tools through default and explicit remote routes and explicit local overrides, verifies local/remote isolation, and covers native read/edit/search/list contracts, special-character paths, home and cwd handling, parent creation, images, output limits, canonical-path mutation serialisation, errors and pre-aborted mutation. It also reads a remote bash command’s **local** overflow artifact with `host="local"`.
 

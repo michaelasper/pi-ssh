@@ -53,7 +53,7 @@ mkdir -p .artifacts && npm run test:e2e 2>&1 | tee .artifacts/ssh-e2e.log
 
 `.artifacts/` is gitignored. The log is the proof artifact. It records the sshd address and both scenario results. A passing run ends with two named scenarios and `pass 2`. Mutation scenarios prove themselves with a second view. The suite reads every file it writes, checks local files byte for byte, and asserts remote fixture removal over a fresh SSH call.
 
-Record the result in `docs/verification.md` with the command, the date, and the platform. Name skipped coverage as skipped. A green mocked suite is not evidence for this skill.
+Record the result in `docs/maintainers/verification.md` with the command, the date, and the platform. Name skipped coverage as skipped. A green mocked suite is not evidence for this skill.
 
 ## Cleanup
 

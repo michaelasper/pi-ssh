@@ -41,6 +41,7 @@
     "check": "npm test && npm run typecheck",
     "test:ssh": "node --test test/ssh.e2e.ts",
     "test:e2e": "sh scripts/ssh-e2e.sh",
+    "test:docs": "python3 scripts/check-links.py",
     "test:package": "python3 scripts/package-smoke.py",
     "bench": "node scripts/bench.ts"
   },

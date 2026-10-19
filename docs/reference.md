@@ -1,6 +1,6 @@
 # Tool and configuration reference
 
-This reference describes the host-aware file-tool implementation in version 0.2.0. It does not establish that these changes have been published or that a particular check has passed; recorded evidence belongs in [verification](verification.md).
+This reference describes the current host-aware file-tool implementation. It does not establish that a particular check has passed. Recorded evidence belongs in [verification](maintainers/verification.md).
 
 ## Package identity
 

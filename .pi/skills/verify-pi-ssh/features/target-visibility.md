@@ -21,7 +21,7 @@ Preconditions:
 - None. This feature never opens an SSH connection, so the sshd harness does not drive it. The unit suite and a real pi launch carry the proof.
 
 - **Status transitions.** The extension test named `/ssh reports the resolved target and the footer status tracks the default host` drives one extension through remote, local, and broken configurations. It asserts the exact status values and the notice text for each. Run it with `node --test test/extension.test.ts`.
-- **Real registration.** Launch pi with the extension and a probe that lists commands. The list contains `ssh`. The 0.5.0 verification record in `docs/verification.md` describes the probe.
+- **Real registration.** Launch pi with the extension and a probe that lists commands. The list contains `ssh`. The 0.5.0 verification record in `docs/maintainers/verification.md` describes the probe.
 - **Proof.** The named test passes and the probe prints its success marker.
 
 ## Gotchas

@@ -1,12 +1,12 @@
 # Work with remote projects
 
-These guides describe the host-aware file tools in version 0.2.0. For arguments and limits, use the [reference](reference.md). For a first read-only exercise, use the [tutorial](tutorial.md).
+These guides describe the current host-aware file tools. For arguments and limits, use the [reference](reference.md). For a first read-only exercise, use the [tutorial](tutorial.md).
 
 ## Install, update or remove
 
-### Try the host-aware file tools from a checkout
+### Try pi-ssh from a checkout
 
-Versions `0.1.x` are bash-only; they do not include the six host-aware file tools. To try version 0.2.0 before npm release approval, use a checkout containing the changes:
+To try unreleased changes, run from a checkout:
 
 ```bash
 cd /absolute/path/to/pi-ssh
@@ -24,7 +24,7 @@ The public package name is scoped:
 pi install npm:@michaelasper/pi-ssh
 ```
 
-Check the installed version’s release notes for its capabilities. Staged npm versions are not installable until a maintainer approves them. After approval, you can select version 0.2.0 explicitly with `pi install npm:@michaelasper/pi-ssh@0.2.0`.
+Check the installed version’s release notes for its capabilities. Versions `0.1.x` are bash-only. Select a version explicitly with `pi install npm:@michaelasper/pi-ssh@<version>`.
 
 The unscoped npm package `pi-ssh` is a different project. To reproduce the historical bash-only release:
 
@@ -74,7 +74,7 @@ Always add `host: "local"` when reading a bash full-output artifact. Those artif
 
 ## Default to a remote project
 
-With version 0.2.0 or newer installed, replace `build` and `/srv/project` with your authorised target and remote project directory:
+With pi-ssh installed, replace `build` and `/srv/project` with your authorised target and remote project directory:
 
 ```bash
 pi --ssh-host build --ssh-cwd /srv/project

@@ -1,5 +1,11 @@
 # Verification results
 
+## Diataxis docs cleanup: 0.8.0
+
+User docs are now exactly four files, one mode each. The tutorial teaches by doing, the how-to gives task recipes, the reference states facts, and the explanation covers boundaries and reasons. Development, releasing, and this file moved under `docs/maintainers/`. The dated 0.2.0 release page and the root `PLAN.md` were retired. Their living content already existed in the how-to migration guide and the explanation. The README shrank to a landing page that links into the four modes.
+
+Evidence. `npm run test:docs` runs the new link checker in `scripts/check-links.py`. It checked 40 relative links and anchors across the README, the docs, and the verification skill with zero broken. CI runs the same check. `npm run check` and `npm run test:package` passed. The package still ships `docs/`, so the maintainer pages travel with it.
+
 ## Dead-peer detection: 0.7.1
 
 Version 0.7.0 was tagged with a typecheck error in the new `ssh -G` test, which a piped local check hid. The CI verify job failed and nothing was staged or released, so the fix shipped as 0.7.1 and the v0.7.0 tag stays unreleased by design.

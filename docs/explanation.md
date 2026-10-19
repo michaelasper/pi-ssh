@@ -26,7 +26,7 @@ Remote bash replaces the local Bash process with OpenSSH through `exec`. File op
 
 There is no persistent helper service, installed helper file, file synchronisation, remote pi/Node runtime, startup connection probe or extension-owned connection pool. Remote Bash, a POSIX-compatible login shell and Python 3.9+ are prerequisites, with fd/fdfind for find and rg for grep. Search lookup includes common installation locations as well as `PATH`, but the extension never installs anything automatically.
 
-Configuration is resolved at session start or reload. Connection reuse remains OpenSSH’s responsibility. This keeps persistent transport state and credential management outside the extension. The historical [bash benchmark](verification.md#performance) concerns the local bash wrapper, not remote file latency or memory use.
+Configuration is resolved at session start or reload. Connection reuse remains OpenSSH’s responsibility. This keeps persistent transport state and credential management outside the extension. The historical [bash benchmark](maintainers/verification.md#performance) concerns the local bash wrapper, not remote file latency or memory use.
 
 ## Output limits are not memory limits
 
